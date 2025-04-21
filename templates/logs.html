@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}Public Logs{% endblock %}
+
+{% block header %}Public Logs{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Public Transaction Logs</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Details</th>
+                    </tr>
+                    </thead>
+                    <tbody id="logsBody">
+                    <tr>
+                        <td colspan="3" class="text-center">Loading logs...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function loadLogs() {
+            fetch('/api/get/logs')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('logsBody');
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No logs found</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach(log => {
+                        html += `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>${log.action}</td>
+                        <td>${log.details}</td>
+                    </tr>
+                `;
+                    });
+                    tableBody.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('logsBody').innerHTML =
+                        '<tr><td colspan="3" class="text-center text-danger">Error loading logs</td></tr>';
+                });
+        }
+
+        // Load logs on page load
+        window.addEventListener('load', function () {
+            loadLogs();
+        });
+    </script>
+{% endblock %}

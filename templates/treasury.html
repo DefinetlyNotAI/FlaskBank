@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block title %}Treasury Management{% endblock %}
+
+{% block header %}Treasury Management{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Currency Pool</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="currencyChart" width="100%" height="300"></canvas>
+                    <div class="mt-3">
+                        <p class="mb-1">Total Currency:
+                            <strong>{{ settings.maximum_currency }} {{ settings.currency_name }}</strong></p>
+                        <p class="mb-1">In Circulation: <strong>{{ total_used }} {{ settings.currency_name }}</strong>
+                        </p>
+                        <p class="mb-0">Available: <strong>{{ available }} {{ settings.currency_name }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Mint Currency</h5>
+                </div>
+                <div class="card-body">
+                    <form id="mintForm">
+                        <div class="mb-3">
+                            <label for="mintAmount" class="form-label">Amount to Mint</label>
+                            <input type="number" class="form-control" id="mintAmount" min="1" step="1" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Mint Currency</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Burn Currency</h5>
+                </div>
+                <div class="card-body">
+                    <form id="burnForm">
+                        <div class="mb-3">
+                            <label for="burnAmount" class="form-label">Amount to Burn</label>
+                            <input type="number" class="form-control" id="burnAmount" min="1" max="{{ available }}"
+                                   step="1" required>
+                            <div class="form-text">You can only burn up to {{ available }} {{ settings.currency_name }}
+                                (unallocated currency)
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger">Burn Currency</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // Currency Pool Chart
+        const ctx = document.getElementById('currencyChart').getContext('2d');
+        const currencyChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['In Circulation', 'Available'],
+                datasets: [{
+                    data: [{{ total_used }}, {{ available }}],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(75, 192, 192, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Mint Form
+        document.getElementById('mintForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const amount = document.getElementById('mintAmount').value;
+
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Confirm Mint',
+                text: `Are you sure you want to mint ${amount} {{ settings.currency_name }}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Mint Currency',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Minting currency...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/api/admin/mintCurrency', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: amount
+                        }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.error || 'Failed to mint currency',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch((error) => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message || 'Failed to mint currency',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                }
+            });
+        });
+
+        // Burn Form
+        document.getElementById('burnForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const amount = document.getElementById('burnAmount').value;
+
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Confirm Burn',
+                text: `Are you sure you want to burn ${amount} {{ settings.currency_name }}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, Burn Currency',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Burning currency...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/api/admin/burnCurrency', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: amount
+                        }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.error || 'Failed to burn currency',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch((error) => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message || 'Failed to burn currency',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                }
+            });
+        });
+    </script>
+{% endblock %}

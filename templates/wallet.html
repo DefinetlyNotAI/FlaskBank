@@ -1,0 +1,654 @@
+{% extends "layout.html" %}
+
+{% block title %}Wallet - {{ user.wallet_name }}{% endblock %}
+
+{% block header %}Wallet: {{ user.wallet_name }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Wallet Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1">Wallet Name: <strong>{{ user.wallet_name }}</strong></p>
+                            <p class="mb-1">Balance:
+                                <strong>{{ user.current_currency }} {{ settings.currency_name }}</strong></p>
+                            <p class="mb-1">Status:
+                                <span class="badge bg-{% if user.is_frozen %}danger{% else %}success{% endif %}">
+                                {% if user.is_frozen %}Frozen{% else %}Active{% endif %}
+                            </span>
+                            </p>
+                            <p class="mb-0">Created: <strong>{{ user.created_at.strftime('%Y-%m-%d') }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="balanceChart" width="100%" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if session.wallet_name == user.wallet_name %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Transfer Funds</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="transferForm">
+                            <div class="mb-3">
+                                <label for="toWallet" class="form-label">Recipient Wallet</label>
+                                <input type="text" class="form-control" id="toWallet" required
+                                       pattern="[a-zA-Z0-9_]{3,100}">
+                                <div class="invalid-feedback">
+                                    Wallet name must be 3-100 characters and contain only letters, numbers, and
+                                    underscores.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="amount" step="0.01" required>
+                                <div class="invalid-feedback">
+                                    Amount must be a valid number.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" required>
+                                    <option value="Reward">Reward</option>
+                                    <option value="Trade">Trade</option>
+                                    <option value="Invoice">Invoice</option>
+                                    <option value="Penalty">Penalty</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Reason</label>
+                                <textarea class="form-control" id="reason" rows="2" required minlength="3"
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback">
+                                    Reason must be 3-500 characters.
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Transfer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Reset Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="resetPasswordForm">
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="newPassword" required minlength="8">
+                                <div class="invalid-feedback">
+                                    Password must be at least 8 characters long.
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resetReason" class="form-label">Reason</label>
+                                <textarea class="form-control" id="resetReason" rows="2" required minlength="3"
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback">
+                                    Reason must be 3-500 characters.
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning">Reset Password</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if is_admin and user.wallet_name != 'admin' %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Admin Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/admin/wallet/{{ user.wallet_name }}" class="btn btn-primary">Detailed View</a>
+                            <button type="button"
+                                    class="btn btn-outline-{% if user.is_frozen %}success{% else %}warning{% endif %}"
+                                    id="freezeWalletBtn">
+                                {% if user.is_frozen %}Unfreeze{% else %}Freeze{% endif %} Wallet
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" id="resetWalletBtn">
+                                Reset Wallet
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" id="burnWalletBtn">
+                                Burn Wallet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Bank Transfer</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="bankTransferForm">
+                            <div class="mb-3">
+                                <label for="bankAmount" class="form-label">Amount (use negative for withdrawal)</label>
+                                <input type="number" class="form-control" id="bankAmount" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bankCategory" class="form-label">Category</label>
+                                <select class="form-select" id="bankCategory" required>
+                                    <option value="Reward">Reward</option>
+                                    <option value="Penalty">Penalty</option>
+                                    <option value="Adjustment">Adjustment</option>
+                                    <option value="Interest">Interest</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bankReason" class="form-label">Reason</label>
+                                <textarea class="form-control" id="bankReason" rows="2" required minlength="3"
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback">
+                                    Reason must be 3-500 characters.
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Process Transfer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div id="recentActivity">
+                        <p class="text-center text-muted">Loading recent activity...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_admin and user.wallet_name != 'admin' %}
+        <!-- Admin Action Forms -->
+        <div class="d-none">
+            <form id="freezeForm">
+                <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
+                <label for="freezeReason"></label><textarea id="freezeReason" name="reason" required minlength="3" maxlength="500"></textarea>
+            </form>
+
+            <form id="resetForm">
+                <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
+                <label for="resetWalletReason"></label><textarea id="resetWalletReason" name="reason" required minlength="3" maxlength="500"></textarea>
+            </form>
+
+            <form id="burnForm">
+                <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
+                <label for="burnReason"></label><textarea id="burnReason" name="reason" required minlength="3" maxlength="500"></textarea>
+            </form>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // Form validation
+        (function () {
+            'use strict';
+
+            // Fetch all forms we want to apply validation to
+            const forms = document.querySelectorAll('.needs-validation');
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Balance Chart
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        const balanceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Balance', 'Available in Bank'],
+                datasets: [{
+                    data: [{{ user.current_currency }}, {{ settings.maximum_currency - user.current_currency }}],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(211, 211, 211, 0.3)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(211, 211, 211, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Load Recent Activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('/api/get/wallet/logs?limit=5');
+                const data = await response.json();
+
+                const activityDiv = document.getElementById('recentActivity');
+                if (data.length === 0) {
+                    activityDiv.innerHTML = '<p class="text-center text-muted">No recent activity</p>';
+                    return;
+                }
+
+                let html = '<ul class="list-group list-group-flush">';
+                data.forEach(log => {
+                    html += `
+                <li class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">${log.action}</h6>
+                        <small>${new Date(log.timestamp).toLocaleString()}</small>
+                    </div>
+                    <p class="mb-1">${log.details}</p>
+                </li>
+            `;
+                });
+                html += '</ul>';
+                activityDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('recentActivity').innerHTML =
+                    '<p class="text-center text-danger">Error loading activity</p>';
+            }
+        }
+
+        // Transfer Form
+        if (document.getElementById('transferForm')) {
+            document.getElementById('transferForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const form = this;
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const toWallet = document.getElementById('toWallet').value;
+                const amount = document.getElementById('amount').value;
+                const category = document.getElementById('category').value;
+                const reason = document.getElementById('reason').value;
+
+                // Show loading state
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Processing your transfer',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const data = await fetchData('/api/transfer/toWallet', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            to_wallet: toWallet,
+                            amount: amount,
+                            category: category,
+                            reason: reason
+                        })
+                    });
+
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+
+        // Reset Password Form
+        if (document.getElementById('resetPasswordForm')) {
+            document.getElementById('resetPasswordForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const form = this;
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const newPassword = document.getElementById('newPassword').value;
+                const reason = document.getElementById('resetReason').value;
+
+                // Show loading state
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Processing your password reset request',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const data = await fetchData('/api/request/resetPassword', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            new_password: newPassword,
+                            reason: reason
+                        })
+                    });
+
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        if (data.message.includes('successfully')) {
+                            location.href = '/login';
+                        }
+                    });
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+
+        // Admin Bank Transfer Form
+        if (document.getElementById('bankTransferForm')) {
+            document.getElementById('bankTransferForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const form = this;
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const amount = document.getElementById('bankAmount').value;
+                const category = document.getElementById('bankCategory').value;
+                const reason = document.getElementById('bankReason').value;
+
+                confirmAction(
+                    'Confirm Bank Transfer',
+                    `Are you sure you want to transfer ${amount} ${amount > 0 ? 'to' : 'from'} this wallet?`,
+                    'warning',
+                    'Yes, Process Transfer',
+                    async () => {
+                        // Show loading state
+                        Swal.fire({
+                            title: 'Processing...',
+                            text: 'Processing bank transfer',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        try {
+                            const data = await fetchData('/api/transfer/bank', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    wallet_name: '{{ user.wallet_name }}',
+                                    amount: amount,
+                                    category: category,
+                                    reason: reason
+                                })
+                            });
+
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } catch (error) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    }
+                );
+            });
+        }
+
+        // Admin Freeze/Unfreeze Button
+        if (document.getElementById('freezeWalletBtn')) {
+            document.getElementById('freezeWalletBtn').addEventListener('click', function () {
+                Swal.fire({
+                    title: '{{ user.is_frozen }}' === 'True' ? 'Unfreeze Wallet' : 'Freeze Wallet',
+                    text: 'Please provide a reason:',
+                    input: 'textarea',
+                    inputAttributes: {
+                        minlength: 3,
+                        maxlength: 500,
+                        required: 'required'
+                    },
+                    showCancelButton: true,
+                    confirmButtonColor: '{{ user.is_frozen }}' === 'True' ? '#28a745' : '#ffc107',
+                    confirmButtonText: '{{ user.is_frozen }}' === 'True' ? 'Unfreeze' : 'Freeze',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (reason) => {
+                        if (!reason || reason.length < 3) {
+                            Swal.showValidationMessage('Reason must be at least 3 characters');
+                            return false;
+                        }
+                        return reason;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reason = result.value;
+                        const endpoint = '{{ user.is_frozen }}' === 'True' ? '/api/admin/unfreezeWallet' : '/api/admin/freezeWallet';
+
+                        fetch(endpoint, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                wallet_name: '{{ user.wallet_name }}',
+                                reason: reason
+                            })
+                        })
+                            .then(data => {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: error.message,
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            });
+                    }
+                });
+            });
+        }
+
+        // Admin Reset Button
+        if (document.getElementById('resetWalletBtn')) {
+            document.getElementById('resetWalletBtn').addEventListener('click', function () {
+                confirmAction(
+                    'Reset Wallet',
+                    'This will set the wallet balance to 0 and delete all related logs. This action cannot be undone.',
+                    'warning',
+                    'Yes, Reset Wallet',
+                    () => {
+                        Swal.fire({
+                            title: 'Reset Wallet',
+                            text: 'Please provide a reason:',
+                            input: 'textarea',
+                            inputAttributes: {
+                                minlength: 3,
+                                maxlength: 500,
+                                required: 'required'
+                            },
+                            showCancelButton: true,
+                            confirmButtonColor: '#ffc107',
+                            confirmButtonText: 'Reset Wallet',
+                            showLoaderOnConfirm: true,
+                            preConfirm: (reason) => {
+                                if (!reason || reason.length < 3) {
+                                    Swal.showValidationMessage('Reason must be at least 3 characters');
+                                    return false;
+                                }
+                                return reason;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const reason = result.value;
+
+                                fetch('/api/admin/resetWallet', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        wallet_name: '{{ user.wallet_name }}',
+                                        reason: reason
+                                    })
+                                })
+                                    .then(data => {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: data.message,
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    })
+                                    .catch(error => {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: error.message,
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    });
+                            }
+                        });
+                    }
+                );
+            });
+        }
+
+        // Admin Burn Button
+        if (document.getElementById('burnWalletBtn')) {
+            document.getElementById('burnWalletBtn').addEventListener('click', function () {
+                confirmAction(
+                    'Burn Wallet',
+                    'This will permanently delete the wallet and all associated data. This action cannot be undone.',
+                    'warning',
+                    'Yes, Burn Wallet',
+                    () => {
+                        Swal.fire({
+                            title: 'Burn Wallet',
+                            text: 'Please provide a reason:',
+                            input: 'textarea',
+                            inputAttributes: {
+                                minlength: 3,
+                                maxlength: 500,
+                                required: 'required'
+                            },
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: 'Burn Wallet',
+                            showLoaderOnConfirm: true,
+                            preConfirm: (reason) => {
+                                if (!reason || reason.length < 3) {
+                                    Swal.showValidationMessage('Reason must be at least 3 characters');
+                                    return false;
+                                }
+                                return reason;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const reason = result.value;
+
+                                fetch('/api/admin/burnWallet', {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                        wallet_name: '{{ user.wallet_name }}',
+                                        reason: reason
+                                    })
+                                })
+                                    .then(data => {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: data.message,
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            window.location.href = '/admin/wallets';
+                                        });
+                                    })
+                                    .catch(error => {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: error.message,
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    });
+                            }
+                        });
+                    }
+                );
+            });
+        }
+
+        // Load recent activity on page load
+        window.addEventListener('load', function () {
+            loadRecentActivity();
+        });
+    </script>
+{% endblock %}

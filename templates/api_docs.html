@@ -1,0 +1,514 @@
+{% extends "layout.html" %}
+
+{% block title %}API Documentation{% endblock %}
+
+{% block header %}API Documentation{% endblock %}
+
+{% block content %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">API Overview</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                This banking system provides a comprehensive API for managing wallets, transactions, and administrative
+                functions.
+                All API endpoints return JSON responses and accept JSON request bodies where applicable.
+            </p>
+        </div>
+    </div>
+
+    <div class="accordion" id="apiAccordion">
+        <!-- Setup APIs -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSetup">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSetup"
+                        aria-expanded="true" aria-controls="collapseSetup">
+                    Setup APIs
+                </button>
+            </h2>
+            <div id="collapseSetup" class="accordion-collapse collapse show" aria-labelledby="headingSetup"
+                 data-bs-parent="#apiAccordion">
+                <div class="accordion-body">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/setup</code>
+                        </div>
+                        <div class="card-body">
+                            <p>Initialize the bank system (one-time setup).</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "bank_name": "Example Bank",
+  "currency_name": "Credits",
+  "admin_password": "secure_password"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Bank system initialized successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/setup/wallet</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Create a new wallet.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "username": "user1",
+  "password": "user_password",
+  "initial_currency": 100
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Wallet created for user1"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/setup/rules</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Configure bank system rules.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "allow_leaderboard": true,
+  "allow_public_logs": true,
+  "allow_debts": false,
+  "allow_self_review": false
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Rules updated successfully"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Get APIs -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingGet">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseGet" aria-expanded="false" aria-controls="collapseGet">
+                    Get APIs
+                </button>
+            </h2>
+            <div id="collapseGet" class="accordion-collapse collapse" aria-labelledby="headingGet"
+                 data-bs-parent="#apiAccordion">
+                <div class="accordion-body">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/wallet?wallet_name=user1</code>
+                        </div>
+                        <div class="card-body">
+                            <p>Get wallet information.</p>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "balance": 100,
+  "currency": "Credits",
+  "is_frozen": false
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/leaderboard?limit=10</code>
+                        </div>
+                        <div class="card-body">
+                            <p>Get wallet leaderboard by balance.</p>
+                            <h6>Response:</h6>
+                            <pre><code>[
+  {
+    "wallet_name": "user1",
+    "balance": 150,
+    "currency": "Credits"
+  },
+  {
+    "wallet_name": "user2",
+    "balance": 100,
+    "currency": "Credits"
+  }
+]</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/logs?limit=50</code>
+                        </div>
+                        <div class="card-body">
+                            <p>Get public transaction logs.</p>
+                            <h6>Response:</h6>
+                            <pre><code>[
+  {
+    "action": "Transfer",
+    "details": "user1 transferred 50 Credits to user2 for Trade: Item purchase",
+    "timestamp": "2023-01-01T12:00:00.000Z"
+  }
+]</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/wallet/logs?limit=50</code> (Signed in users)
+                        </div>
+                        <div class="card-body">
+                            <p>Get logs for the current user's wallet.</p>
+                            <h6>Response:</h6>
+                            <pre><code>[
+  {
+    "action": "Transfer",
+    "details": "user1 transferred 50 Credits to user2 for Trade: Item purchase",
+    "timestamp": "2023-01-01T12:00:00.000Z"
+  }
+]</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/admin/logs?limit=50</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Get admin-level logs.</p>
+                            <h6>Response:</h6>
+                            <pre><code>[
+  {
+    "action": "Wallet Creation",
+    "details": "Admin created wallet for user1 with 100 Credits",
+    "timestamp": "2023-01-01T10:00:00.000Z"
+  }
+]</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/currencyPool</code>
+                        </div>
+                        <div class="card-body">
+                            <p>Get currency pool information.</p>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "total_used_currency": 250,
+  "maximum_currency": 1000000,
+  "available_currency": 999750,
+  "currency_name": "Credits"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>GET /api/get/walletList</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Get list of all wallets.</p>
+                            <h6>Response:</h6>
+                            <pre><code>[
+  {
+    "wallet_name": "user1",
+    "balance": 150,
+    "currency": "Credits",
+    "is_frozen": false
+  },
+  {
+    "wallet_name": "user2",
+    "balance": 100,
+    "currency": "Credits",
+    "is_frozen": false
+  }
+]</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer APIs -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTransfer">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseTransfer" aria-expanded="false" aria-controls="collapseTransfer">
+                    Transfer APIs
+                </button>
+            </h2>
+            <div id="collapseTransfer" class="accordion-collapse collapse" aria-labelledby="headingTransfer"
+                 data-bs-parent="#apiAccordion">
+                <div class="accordion-body">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/transfer/toWallet</code> (Signed in users)
+                        </div>
+                        <div class="card-body">
+                            <p>Transfer currency to another wallet.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "to_wallet": "user2",
+  "amount": 50,
+  "category": "Trade",
+  "reason": "Item purchase"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Transfer completed successfully",
+  "transfer_ticket_uuid": "550e8400-e29b-41d4-a716-446655440000"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/transfer/bank</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Transfer currency from/to bank to a wallet.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "amount": 50,
+  "category": "Reward",
+  "reason": "Weekly bonus"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Deposit completed successfully",
+  "transfer_ticket_uuid": "550e8400-e29b-41d4-a716-446655440001"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request APIs -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingRequest">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseRequest" aria-expanded="false" aria-controls="collapseRequest">
+                    Request APIs
+                </button>
+            </h2>
+            <div id="collapseRequest" class="accordion-collapse collapse" aria-labelledby="headingRequest"
+                 data-bs-parent="#apiAccordion">
+                <div class="accordion-body">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/request/refund</code> (Signed in users)
+                        </div>
+                        <div class="card-body">
+                            <p>Request a refund for a transfer.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "transfer_ticket_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "reason": "Item not received"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Refund request submitted",
+  "request_ticket_uuid": "550e8400-e29b-41d4-a716-446655440002"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/request/resetPassword</code> (Signed in users)
+                        </div>
+                        <div class="card-body">
+                            <p>Request a password reset.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "new_password": "new_secure_password",
+  "reason": "Security update"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Password reset request submitted",
+  "request_ticket_uuid": "550e8400-e29b-41d4-a716-446655440003"
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin APIs -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingAdmin">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseAdmin" aria-expanded="false" aria-controls="collapseAdmin">
+                    Admin APIs
+                </button>
+            </h2>
+            <div id="collapseAdmin" class="accordion-collapse collapse" aria-labelledby="headingAdmin"
+                 data-bs-parent="#apiAccordion">
+                <div class="accordion-body">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/burnWallet</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Permanently delete a wallet.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "reason": "Account violation"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Wallet user1 burned successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/freezeWallet</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Freeze a wallet to prevent transactions.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "reason": "Suspicious activity"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Wallet user1 frozen successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/unfreezeWallet</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Unfreeze a wallet to allow transactions.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "reason": "Issue resolved"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Wallet user1 unfrozen successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/resetWallet</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Reset a wallet's balance to 0 and delete related logs.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "wallet_name": "user1",
+  "reason": "Account reset requested"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Wallet user1 reset successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/approveRequest</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Approve a pending request.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "request_ticket_uuid": "550e8400-e29b-41d4-a716-446655440002"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Request 550e8400-e29b-41d4-a716-446655440002 approved successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/rejectRequest</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Reject a pending request.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "request_ticket_uuid": "550e8400-e29b-41d4-a716-446655440002"
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "Request 550e8400-e29b-41d4-a716-446655440002 rejected successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/purgeLogs</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Delete all logs from the system.</p>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "All logs purged successfully"
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/mintCurrency</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Increase the maximum currency supply.</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "amount": 10000
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "10000 Credits minted successfully",
+  "new_maximum": 1010000
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <code>POST /api/admin/burnCurrency</code> (Admin only)
+                        </div>
+                        <div class="card-body">
+                            <p>Decrease the maximum currency supply (only unallocated currency).</p>
+                            <h6>Request Body:</h6>
+                            <pre><code>{
+  "amount": 5000
+}</code></pre>
+                            <h6>Response:</h6>
+                            <pre><code>{
+  "message": "5000 Credits burned successfully",
+  "new_maximum": 1005000
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% block header %}Error{% endblock %}
+
+{% block content %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    <a href="/" class="btn btn-primary">Return to Home</a>
+{% endblock %}

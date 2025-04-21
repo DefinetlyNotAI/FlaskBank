@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block header %}About the Bank System{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">About
+                        {% if settings %}{{ settings.bank_name }}{% else %}Bank System{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if settings %}
+                        <p>
+                            {{ settings.bank_name }} is a virtual banking system that allows users to
+                            manage {{ settings.currency_name }} currency.
+                            This system provides a comprehensive set of features for managing wallets, transactions, and
+                            more.
+                        </p>
+                    {% else %}
+                        <p>
+                            The bank system has not been initialized yet. Please use the setup page to configure the
+                            system.
+                        </p>
+                        <a href="/setup" class="btn btn-primary">Setup Bank</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Features</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Wallet Management</strong>: Create and manage virtual wallets with secure
+                            authentication.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Transaction System</strong>: Transfer currency between wallets with detailed
+                            logging.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Admin Controls</strong>: Comprehensive administrative tools for managing the bank
+                            system.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Request System</strong>: Users can submit requests for refunds or password resets.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Leaderboard</strong>: View top wallets by balance (if enabled).
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Logs</strong>: Detailed transaction logs with different privacy levels.
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Currency Management</strong>: Mint or burn currency to control the economy.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">API Access</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        This bank system provides a comprehensive API for integration with other systems.
+                        Check out the API documentation for details.
+                    </p>
+                    <div class="d-grid">
+                        <a href="/api" class="btn btn-primary">View API Docs</a>
+                    </div>
+                </div>
+            </div>
+
+            {% if settings %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">System Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">Bank Name: <strong>{{ settings.bank_name }}</strong></p>
+                        <p class="mb-1">Currency: <strong>{{ settings.currency_name }}</strong></p>
+                        <p class="mb-0">Maximum Supply: <strong>{{ settings.maximum_currency }}</strong></p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

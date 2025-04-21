@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+
+{% block title %}My Logs{% endblock %}
+
+{% block header %}My Transaction Logs{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">My Transaction History</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userLogsBody">
+                    <tr>
+                        <td colspan="4" class="text-center">Loading logs...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Request Modal -->
+    <div class="modal fade" id="refundModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Refund</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="refundForm">
+                        <input type="hidden" id="transferUuid" value="">
+                        <div class="mb-3">
+                            <label for="refundReason" class="form-label">Reason for Refund</label>
+                            <textarea class="form-control" id="refundReason" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitRefund">Submit Refund Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function loadUserLogs() {
+            fetch('/api/get/wallet/logs')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('userLogsBody');
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No logs found</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach(log => {
+                        // Check if this is a transfer log that might be refundable
+                        const isTransfer = log.action === 'Transfer' && log.details.includes('{{ session.wallet_name }} transferred');
+                        const transferUuid = isTransfer ? extractTransferUuid(log.details) : null;
+
+                        html += `
+                    <tr>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>${log.action}</td>
+                        <td>${log.details}</td>
+                        <td>
+                            ${isTransfer ?
+                            `<button class="btn btn-sm btn-outline-warning refund-btn"
+                                    data-transfer-uuid="${transferUuid}">
+                                    Request Refund
+                                </button>` :
+                            ''}
+                        </td>
+                    </tr>
+                `;
+                    });
+                    tableBody.innerHTML = html;
+
+                    // Add event listeners to refund buttons
+                    document.querySelectorAll('.refund-btn').forEach(button => {
+                        button.addEventListener('click', function () {
+                            const transferUuid = this.getAttribute('data-transfer-uuid');
+                            document.getElementById('transferUuid').value = transferUuid;
+                            const refundModal = new bootstrap.Modal(document.getElementById('refundModal'));
+                            refundModal.show();
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('userLogsBody').innerHTML =
+                        '<tr><td colspan="4" class="text-center text-danger">Error loading logs</td></tr>';
+                });
+        }
+
+        // Helper function to extract transfer UUID from log details
+        function extractTransferUuid(details) {
+            // This is a simplified example - in a real app, you'd store the UUID in the log
+            // or have a more reliable way to extract it
+            const match = details.match(/transfer ticket uuid: ([a-f0-9-]+)/i);
+            return match ? match[1] : '';
+        }
+
+        // Submit refund request
+        document.getElementById('submitRefund').addEventListener('click', function () {
+            const transferUuid = document.getElementById('transferUuid').value;
+            const reason = document.getElementById('refundReason').value;
+
+            if (!reason) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please provide a reason for the refund',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Show loading state
+            Swal.fire({
+                title: 'Submitting refund request...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetchData('/api/request/refund', {
+                method: 'POST',
+                body: JSON.stringify({
+                    transfer_ticket_uuid: transferUuid,
+                    reason: reason
+                })
+            })
+                .then(data => {
+                    if (data.message) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            const refundModal = bootstrap.Modal.getInstance(document.getElementById('refundModal'));
+                            refundModal.hide();
+                            loadUserLogs(); // Reload logs
+                        });
+                    }
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Failed to submit refund request',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        });
+
+        // Load user logs on page load
+        window.addEventListener('load', function () {
+            loadUserLogs();
+        });
+    </script>
+{% endblock %}

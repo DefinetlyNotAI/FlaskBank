@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block title %}Home - {% if settings %}{{ settings.bank_name }}{% else %}Bank System{% endif %}{% endblock %}
+
+{% block header %}Welcome to {% if settings %}{{ settings.bank_name }}{% else %}Bank System{% endif %}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% if settings %}
+                        <h5 class="card-title">About {{ settings.bank_name }}</h5>
+                        <p class="card-text">
+                            Welcome to {{ settings.bank_name }}, a virtual banking system where you can manage
+                            your {{ settings.currency_name }} currency.
+                        </p>
+                    {% else %}
+                        <h5 class="card-title">Bank System Not Initialized</h5>
+                        <p class="card-text">
+                            The bank system has not been initialized yet. Please use the setup page to configure the
+                            system.
+                        </p>
+                        <a href="/setup" class="btn btn-primary">Setup Bank</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if settings %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Leaderboard
+                                <span class="badge bg-{% if settings.allow_leaderboard %}success{% else %}danger{% endif %} rounded-pill">
+                            {% if settings.allow_leaderboard %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Public Logs
+                                <span class="badge bg-{% if settings.allow_public_logs %}success{% else %}danger{% endif %} rounded-pill">
+                            {% if settings.allow_public_logs %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Allow Debts
+                                <span class="badge bg-{% if settings.allow_debts %}success{% else %}danger{% endif %} rounded-pill">
+                            {% if settings.allow_debts %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Self-Review Requests
+                                <span class="badge bg-{% if settings.allow_self_review %}success{% else %}danger{% endif %} rounded-pill">
+                            {% if settings.allow_self_review %}Enabled{% else %}Disabled{% endif %}
+                        </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if is_logged_in %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/wallet/{{ session.wallet_name }}" class="btn btn-primary">View My Wallet</a>
+                            <a href="/user/logs" class="btn btn-outline-secondary">View My Logs</a>
+                            {% if is_admin %}
+                                <a href="/admin/treasury" class="btn btn-outline-dark">Treasury Management</a>
+                                <a href="/admin/wallets" class="btn btn-outline-dark">Wallet Management</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Account</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Login to access your wallet and manage your currency.</p>
+                        <div class="d-grid gap-2">
+                            <a href="/login" class="btn btn-primary">Login</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if settings %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Currency Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">Currency Name: <strong>{{ settings.currency_name }}</strong></p>
+                        <p class="mb-0">Maximum Supply: <strong>{{ settings.maximum_currency }}</strong></p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
