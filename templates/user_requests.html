@@ -5,14 +5,14 @@
 {% block header %}My Request History{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">My Submitted Requests</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">My Submitted Requests</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
                     <tr>
                         <th>Type</th>
                         <th>Category</th>
@@ -20,39 +20,39 @@
                         <th>Status</th>
                         <th>Date</th>
                     </tr>
-                </thead>
-                <tbody id="userRequestsBody">
+                    </thead>
+                    <tbody id="userRequestsBody">
                     <tr>
                         <td colspan="5" class="text-center">Loading requests...</td>
                     </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-function loadUserRequests() {
-    fetch('/api/get/user/requests')
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById('userRequestsBody');
-            if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No requests found</td></tr>';
-                return;
-            }
-            
-            let html = '';
-            data.forEach(request => {
-                // Set status badge color
-                let statusClass = 'bg-secondary';
-                if (request.status === 'Approved') statusClass = 'bg-success';
-                else if (request.status === 'Rejected') statusClass = 'bg-danger';
-                else if (request.status === 'Pending') statusClass = 'bg-warning';
-                
-                html += `
+    <script>
+        function loadUserRequests() {
+            fetch('/api/get/user/requests')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('userRequestsBody');
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No requests found</td></tr>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach(request => {
+                        // Set status badge color
+                        let statusClass = 'bg-secondary';
+                        if (request.status === 'Approved') statusClass = 'bg-success';
+                        else if (request.status === 'Rejected') statusClass = 'bg-danger';
+                        else if (request.status === 'Pending') statusClass = 'bg-warning';
+
+                        html += `
                     <tr>
                         <td>${request.request_type}</td>
                         <td>${request.category || 'N/A'}</td>
@@ -61,19 +61,19 @@ function loadUserRequests() {
                         <td>${new Date(request.timestamp).toLocaleString()}</td>
                     </tr>
                 `;
-            });
-            tableBody.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('userRequestsBody').innerHTML = 
-                '<tr><td colspan="5" class="text-center text-danger">Error loading requests</td></tr>';
-        });
-}
+                    });
+                    tableBody.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('userRequestsBody').innerHTML =
+                        '<tr><td colspan="5" class="text-center text-danger">Error loading requests</td></tr>';
+                });
+        }
 
-// Load user requests on page load
-window.addEventListener('load', function() {
-    loadUserRequests();
-});
-</script>
+        // Load user requests on page load
+        window.addEventListener('load', function () {
+            loadUserRequests();
+        });
+    </script>
 {% endblock %}

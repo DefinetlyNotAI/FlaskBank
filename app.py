@@ -1,12 +1,13 @@
 import os
-import re
-import uuid
-import psutil
 import platform
+import re
+import time
+import uuid
 from datetime import datetime, UTC
 from functools import wraps
 from urllib.parse import urlparse, urljoin
 
+import psutil
 import psycopg2
 import psycopg2.extras
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for, send_from_directory
@@ -14,9 +15,6 @@ from psycopg2.pool import ThreadedConnectionPool
 from waitress import serve
 from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import Form, StringField, PasswordField, FloatField, validators, SelectField, TextAreaField
-
-# Add import for time module
-import time
 
 app = Flask(__name__, static_folder='static')
 
@@ -692,12 +690,12 @@ def get_server_health():
 # Routes
 @app.route('/')
 def home():
+    if not is_db_initialized():
+        return redirect(url_for('setup_page'))
+
     if db_pool is None:
         return render_template('error.html',
                                message="Database is not initialized. Please set up the system by putting the required ENV variables.")
-
-    if not is_db_initialized():
-        return redirect(url_for('setup_page'))
 
     settings = get_settings()
     return render_template('home.html', settings=settings, is_admin='admin' in session and session['admin'],

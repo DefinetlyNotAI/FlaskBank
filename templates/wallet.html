@@ -185,17 +185,20 @@
         <div class="d-none">
             <form id="freezeForm">
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
-                <label for="freezeReason"></label><textarea id="freezeReason" name="reason" required minlength="3" maxlength="500"></textarea>
+                <label for="freezeReason"></label><textarea id="freezeReason" name="reason" required minlength="3"
+                                                            maxlength="500"></textarea>
             </form>
 
             <form id="resetForm">
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
-                <label for="resetWalletReason"></label><textarea id="resetWalletReason" name="reason" required minlength="3" maxlength="500"></textarea>
+                <label for="resetWalletReason"></label><textarea id="resetWalletReason" name="reason" required
+                                                                 minlength="3" maxlength="500"></textarea>
             </form>
 
             <form id="burnForm">
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
-                <label for="burnReason"></label><textarea id="burnReason" name="reason" required minlength="3" maxlength="500"></textarea>
+                <label for="burnReason"></label><textarea id="burnReason" name="reason" required minlength="3"
+                                                          maxlength="500"></textarea>
             </form>
         </div>
     {% endif %}
@@ -462,7 +465,7 @@
 
         // Admin Freeze/Unfreeze Button
         // Find the freezeWalletBtn click event handler and update the fetch call
-        document.getElementById('freezeWalletBtn').addEventListener('click', function() {
+        document.getElementById('freezeWalletBtn').addEventListener('click', function () {
             Swal.fire({
                 title: '{{ user.is_frozen }}' === 'True' ? 'Unfreeze Wallet' : 'Freeze Wallet',
                 text: 'Please provide a reason:',
@@ -498,32 +501,32 @@
                             reason: reason
                         })
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            location.reload();
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
                         });
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: error.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    });
                 }
             });
         });
 
         // Admin Reset Button
         // Update the resetWalletBtn click event handler
-        document.getElementById('resetWalletBtn').addEventListener('click', function() {
+        document.getElementById('resetWalletBtn').addEventListener('click', function () {
             confirmAction(
                 'Reset Wallet',
                 'This will set the wallet balance to 0 and delete all related logs. This action cannot be undone.',
@@ -563,7 +566,7 @@
                                     wallet_name: '{{ user.wallet_name }}',
                                     reason: reason
                                 })
-                                })
+                            })
                                 .then(response => response.json())
                                 .then(data => {
                                     Swal.fire({
@@ -591,7 +594,7 @@
 
         // Admin Burn Button
         // Update the burnWalletBtn click event handler
-        document.getElementById('burnWalletBtn').addEventListener('click', function() {
+        document.getElementById('burnWalletBtn').addEventListener('click', function () {
             confirmAction(
                 'Burn Wallet',
                 'This will permanently delete the wallet and all associated data. This action cannot be undone.',
@@ -631,7 +634,7 @@
                                     wallet_name: '{{ user.wallet_name }}',
                                     reason: reason
                                 })
-                                })
+                            })
                                 .then(response => response.json())
                                 .then(data => {
                                     Swal.fire({
