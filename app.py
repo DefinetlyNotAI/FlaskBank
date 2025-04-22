@@ -46,7 +46,7 @@ if os.environ.get("SECRET_KEY", "EMPTY") == "EMPTY":
     print("Major security issue, please set SECRET_KEY environment variable")
 
 
-# TODO - remove secrets, seperate the css/js from html, check using pycharm issues, add favicon, and finally push
+# TODO - separate the css/js from html, add favicon, and finally push
 
 
 # Database helper functions

@@ -16,38 +16,38 @@ def get_tables(db_url):
                        FROM information_schema.tables
                        WHERE table_schema = 'public'
                        """)
-        tables = [row['table_name'] for row in cursor.fetchall()]
+        tables_ = [row_['table_name'] for row_ in cursor.fetchall()]
         cursor.close()
         conn.close()
-        return tables
+        return tables_
     except Exception as e:
         print(f"Error: {e}")
         return None
 
 
-def get_table_content(db_url, table_name):
+def get_table_content(db_url, table_name_):
     try:
         conn = psycopg2.connect(db_url)
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute(f"SELECT * FROM {table_name} LIMIT 10;")
-        rows = cursor.fetchall()
+        cursor.execute(f"SELECT * FROM {table_name_} LIMIT 10;")
+        rows_ = cursor.fetchall()
         cursor.close()
         conn.close()
-        return rows
+        return rows_
     except Exception as e:
         print(f"Error: {e}")
         return None
 
 
-def delete_table(db_url, table_name):
+def delete_table(db_url, table_name_):
     try:
         conn = psycopg2.connect(db_url)
         cursor = conn.cursor()
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name} CASCADE;")
+        cursor.execute(f"DROP TABLE IF EXISTS {table_name_} CASCADE;")
         conn.commit()
         cursor.close()
         conn.close()
-        print(f"Table '{table_name}' deleted successfully.")
+        print(f"Table '{table_name_}' deleted successfully.")
     except Exception as e:
         print(f"Error: {e}")
 
