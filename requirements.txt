@@ -1,0 +1,7 @@
+psutil~=6.1.1
+psycopg2-binary~=2.9.9
+DateTime~=5.5
+Flask~=2.3.3
+waitress~=3.0.2
+Werkzeug~=3.0.6
+WTForms~=3.2.1

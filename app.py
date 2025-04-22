@@ -22,7 +22,7 @@ app = Flask(__name__, static_folder='static')
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "EMPTY")
 db_url = os.environ.get("DATABASE_URL", "EMPTY")
 # Options: production or development
-ENV = os.environ.get('FLASK_ENV', 'production')
+RELEASE_TYPE = os.environ.get('RELEASE_TYPE', 'production')
 
 # We advise to keep this FALSE as it may undermine security and put too much pressure on servers if set to True, admins bypass this
 # Allow access to the endpoint if (overridden if ALLOW_PUBLIC_API_ACCESS = True):
@@ -46,7 +46,7 @@ if os.environ.get("SECRET_KEY", "EMPTY") == "EMPTY":
     print("Major security issue, please set SECRET_KEY environment variable")
 
 
-# TODO - separate the css/js from html, add favicon, and finally push
+# TODO - separate the css/js from html, and finally push
 
 
 # Database helper functions
@@ -1871,7 +1871,7 @@ def api_admin_approve_request():
                                     # Add public log for large refunds
                                     if amount >= 100:
                                         create_log("Large Refund",
-                                                   f"{amount} {settings['currency_name']} refunded from {recipient} to {sender}",
+                                                   f" {amount} {settings['currency_name']} refunded from {recipient} to {sender}",
                                                    "Global")
                                 else:
                                     # If recipient doesn't have enough funds, mark as approved but note the issue
@@ -1932,6 +1932,39 @@ def api_admin_approve_request():
                     create_log("Transfer Approved",
                                f"Admin approved transfer request from {wallet_name} for {amount} {get_settings()['currency_name']}",
                                "Admin")
+        elif request_item['request_type'] == "WalletCreation":
+            # Process wallet creation
+            wallet_name = request_item['wallet_name']
+
+            # Extract the hashed password from the reason field
+            # Format: "Original reason | HASHED_PASSWORD"
+            parts = request_item['reason'].split(' | ')
+            if len(parts) >= 2:
+                hashed_password = parts[-1]  # The last part is the hashed password
+
+                # Create the wallet with 0 initial currency
+                execute_query(
+                    "INSERT INTO users (wallet_name, password, current_currency) VALUES (%s, %s, %s)",
+                    (wallet_name, hashed_password, 0),
+                    commit=True
+                )
+
+                # Update admin balance
+                update_admin_balance()
+
+                create_log("Wallet Creation",
+                           f"Admin created wallet for {wallet_name}",
+                           "Admin")
+
+                # Add public log for wallet creation
+                create_log("New Wallet",
+                           f"User {wallet_name} joined the bank with 0 {settings['currency_name']}",
+                           "Global")
+            else:
+                create_log("Wallet Creation Failed",
+                           f"Failed to create wallet for {wallet_name}: Invalid request format",
+                           "Admin")
+                return jsonify({"error": "Invalid wallet creation request format"}), 400
 
         create_log("Request Approved",
                    f"Admin approved request {request_uuid} for {request_item['wallet_name']}",
@@ -2113,6 +2146,61 @@ def api_admin_burn_currency():
     except Exception as e:
         print(f"Error burning currency: {e}")
         return jsonify({"error": f"Failed to burn currency: {str(e)}"}), 500
+
+
+@app.route('/api/request/wallet', methods=['POST'])
+@api_access_control
+def api_request_wallet():
+    """API endpoint to request a new wallet"""
+    data = request.json
+    wallet_name = data.get('wallet_name')
+    password = data.get('password')
+    reason = data.get('reason')
+
+    if not validate_wallet_name(wallet_name):
+        return jsonify({"error": "Wallet name can only contain letters, numbers, and underscores"}), 400
+
+    if not password or len(password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters long"}), 400
+
+    if not reason or len(reason) < 3:
+        return jsonify({"error": "Reason must be at least 3 characters long"}), 400
+
+    # Check if wallet already exists
+    existing_wallet = get_user_by_wallet_name(wallet_name)
+    if existing_wallet:
+        return jsonify({"error": "Wallet name already exists"}), 400
+
+    try:
+        # Create a wallet creation request
+        request_uuid = str(uuid.uuid4())
+
+        # Store the hashed password in the reason field for security
+        # Format: "Original reason | HASHED_PASSWORD"
+        hashed_password = generate_password_hash(password)
+        request_reason = f"{reason} | {hashed_password}"
+
+        execute_query(
+            """
+            INSERT INTO requests
+            (request_type, ticket_uuid, wallet_name, category, status, reason, ip_address)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            ("WalletCreation", request_uuid, wallet_name, "Account", "Pending", request_reason, get_client_ip()),
+            commit=True
+        )
+
+        create_log("Wallet Creation Request",
+                   f"User requested wallet creation for {wallet_name}: {reason}",
+                   "Admin")
+
+        return jsonify({
+            "message": "Wallet creation request submitted. An administrator will review your request.",
+            "request_ticket_uuid": request_uuid
+        })
+    except Exception as e:
+        print(f"Error requesting wallet creation: {e}")
+        return jsonify({"error": f"Failed to submit wallet creation request: {str(e)}"}), 500
 
 
 # Web UI routes
@@ -2348,7 +2436,7 @@ def initialize_database():
 
 
 if __name__ == '__main__':
-    if ENV == 'production':
+    if RELEASE_TYPE == 'production':
         serve(app, host='0.0.0.0', port=5000)
     else:
         app.run(ssl_context='adhoc', debug=True, port=5000)

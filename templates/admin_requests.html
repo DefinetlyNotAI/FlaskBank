@@ -34,10 +34,13 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         <button class="btn btn-sm btn-success approve-btn"
-                                                data-request-uuid="{{ request.ticket_uuid }}">Approve
+                                                data-request-uuid="{{ request.ticket_uuid }}"
+                                                {% if request.request_type == 'WalletCreation' %}data-wallet-creation="true"{% endif %}>
+                                            Approve
                                         </button>
                                         <button class="btn btn-sm btn-danger reject-btn"
-                                                data-request-uuid="{{ request.ticket_uuid }}">Reject
+                                                data-request-uuid="{{ request.ticket_uuid }}">
+                                            Reject
                                         </button>
                                     </div>
                                 </td>
@@ -60,10 +63,19 @@
             document.querySelectorAll('.approve-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     const requestUuid = this.getAttribute('data-request-uuid');
+                    const isWalletCreation = this.hasAttribute('data-wallet-creation');
+
+                    let title = 'Approve Request';
+                    let text = 'Are you sure you want to approve this request?';
+
+                    if (isWalletCreation) {
+                        title = 'Create Wallet';
+                        text = 'Are you sure you want to create this wallet?';
+                    }
 
                     Swal.fire({
-                        title: 'Approve Request',
-                        text: 'Are you sure you want to approve this request?',
+                        title: title,
+                        text: text,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#28a745',
