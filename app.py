@@ -46,7 +46,7 @@ if os.environ.get("SECRET_KEY", "EMPTY") == "EMPTY":
     print("Major security issue, please set SECRET_KEY environment variable")
 
 
-# TODO - separate the css/js from html, and finally push
+# TODO - wallet has bug where DOM loading fails, and finally push
 
 
 # Database helper functions
@@ -2423,6 +2423,8 @@ def about():
 
 # Serve static files
 @app.route('/static/<path:filename>')
+@api_access_control
+@admin_required
 def serve_static(filename):
     return send_from_directory(app.static_folder, filename)
 
