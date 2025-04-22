@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dark-mode.css') }}" rel="stylesheet">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -38,8 +39,18 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/about">About</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/server-health">Server Health</a>
+                </li>
             </ul>
-            <div class="d-flex">
+            <div class="d-flex align-items-center">
+                <!-- Dark Mode Toggle -->
+                <div class="form-check form-switch me-3">
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                    <label class="form-check-label text-light" for="darkModeToggle">
+                        <i class="bi bi-moon"></i>
+                    </label>
+                </div>
                 {% if is_logged_in %}
                     <a href="/logout" class="btn btn-outline-light me-2">Logout</a>
                 {% else %}
@@ -64,6 +75,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/user/logs">
                                 My Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/user/requests">
+                                My Requests
                             </a>
                         </li>
                         {% if settings and settings.allow_self_review %}
@@ -97,6 +113,16 @@
                                     Rules
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/requests">
+                                    All Requests
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/sql">
+                                    Database Explorer
+                                </a>
+                            </li>
                         {% endif %}
                     </ul>
                 </div>
@@ -117,6 +143,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
 
 {% block scripts %}{% endblock %}
 </body>

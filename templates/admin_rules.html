@@ -5,97 +5,94 @@
 {% block header %}Bank Rules Configuration{% endblock %}
 
 {% block content %}
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Bank System Rules</h5>
-        </div>
-        <div class="card-body">
-            <form id="rulesForm">
-                <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="allowLeaderboard"
-                           {% if settings.allow_leaderboard %}checked{% endif %}>
-                    <label class="form-check-label" for="allowLeaderboard">Allow Leaderboard</label>
-                    <div class="form-text">When enabled, users can view the leaderboard of wallet balances.</div>
-                </div>
-
-                <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="allowPublicLogs"
-                           {% if settings.allow_public_logs %}checked{% endif %}>
-                    <label class="form-check-label" for="allowPublicLogs">Allow Public Logs</label>
-                    <div class="form-text">When enabled, users can view public transaction logs.</div>
-                </div>
-
-                <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="allowDebts"
-                           {% if settings.allow_debts %}checked{% endif %}>
-                    <label class="form-check-label" for="allowDebts">Allow Debts</label>
-                    <div class="form-text">When enabled, users can have negative balances.</div>
-                </div>
-
-                <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="allowSelfReview"
-                           {% if settings.allow_self_review %}checked{% endif %}>
-                    <label class="form-check-label" for="allowSelfReview">Allow Self-Review</label>
-                    <div class="form-text">When enabled, users can approve their own requests without admin
-                        intervention.
-                    </div>
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Save Rules</button>
-                </div>
-            </form>
-        </div>
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Bank System Rules</h5>
     </div>
+    <div class="card-body">
+        <form id="rulesForm">
+            <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="allowLeaderboard" {% if settings.allow_leaderboard %}checked{% endif %}>
+                <label class="form-check-label" for="allowLeaderboard">Allow Leaderboard</label>
+                <div class="form-text">When enabled, users can view the leaderboard of wallet balances.</div>
+            </div>
+            
+            <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="allowPublicLogs" {% if settings.allow_public_logs %}checked{% endif %}>
+                <label class="form-check-label" for="allowPublicLogs">Allow Public Logs</label>
+                <div class="form-text">When enabled, users can view public transaction logs.</div>
+            </div>
+            
+            <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="allowDebts" {% if settings.allow_debts %}checked{% endif %}>
+                <label class="form-check-label" for="allowDebts">Allow Debts</label>
+                <div class="form-text">When enabled, users can have negative balances.</div>
+            </div>
+            
+            <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="allowSelfReview" {% if settings.allow_self_review %}checked{% endif %}>
+                <label class="form-check-label" for="allowSelfReview">Allow Self-Review</label>
+                <div class="form-text">When enabled, users can approve their own requests without admin intervention.</div>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Save Rules</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        document.getElementById('rulesForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const allowLeaderboard = document.getElementById('allowLeaderboard').checked;
-            const allowPublicLogs = document.getElementById('allowPublicLogs').checked;
-            const allowDebts = document.getElementById('allowDebts').checked;
-            const allowSelfReview = document.getElementById('allowSelfReview').checked;
-
-            // Show loading state
+<script>
+document.getElementById('rulesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const allowLeaderboard = document.getElementById('allowLeaderboard').checked;
+    const allowPublicLogs = document.getElementById('allowPublicLogs').checked;
+    const allowDebts = document.getElementById('allowDebts').checked;
+    const allowSelfReview = document.getElementById('allowSelfReview').checked;
+    
+    // Show loading state
+    Swal.fire({
+        title: 'Saving rules...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetchData('/api/setup/rules', {
+        method: 'POST',
+        body: JSON.stringify({
+            allow_leaderboard: allowLeaderboard,
+            allow_public_logs: allowPublicLogs,
+            allow_debts: allowDebts,
+            allow_self_review: allowSelfReview
+        })
+    })
+    .then(data => {
+        if (data.message) {
             Swal.fire({
-                title: 'Saving rules...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Always refresh the page after a successful action
+                location.reload();
             });
-
-            fetchData('/api/setup/rules', {
-                method: 'POST',
-                body: JSON.stringify({
-                    allow_leaderboard: allowLeaderboard,
-                    allow_public_logs: allowPublicLogs,
-                    allow_debts: allowDebts,
-                    allow_self_review: allowSelfReview
-                })
-            })
-                .then(data => {
-                    if (data.message) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                })
-                .catch((error) => {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Failed to save rules',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
-                });
+        }
+    })
+    .catch((error) => {
+        Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Failed to save rules',
+            icon: 'error',
+            confirmButtonText: 'OK'
         });
-    </script>
+    });
+});
+</script>
 {% endblock %}

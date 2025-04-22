@@ -94,8 +94,8 @@
                             <select class="form-select" id="bankCategory" required>
                                 <option value="Reward">Reward</option>
                                 <option value="Penalty">Penalty</option>
-                                <option value="Adjustment">Adjustment</option>
-                                <option value="Interest">Interest</option>
+                                <option value="Invoice">Invoice</option>
+                                <option value="Trade">Trade</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -218,13 +218,17 @@
                 }
             });
 
-            fetchData(endpoint, {
+            fetch(endpoint, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     wallet_name: '{{ user.wallet_name }}',
                     reason: reason
                 })
             })
+                .then(response => response.json())
                 .then(data => {
                     if (data.message) {
                         Swal.fire({
@@ -269,13 +273,17 @@
                 }
             });
 
-            fetchData('/api/admin/resetWallet', {
+            fetch('/api/admin/resetWallet', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     wallet_name: '{{ user.wallet_name }}',
                     reason: reason
                 })
             })
+                .then(response => response.json())
                 .then(data => {
                     if (data.message) {
                         Swal.fire({
@@ -320,13 +328,17 @@
                 }
             });
 
-            fetchData('/api/admin/burnWallet', {
+            fetch('/api/admin/burnWallet', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     wallet_name: '{{ user.wallet_name }}',
                     reason: reason
                 })
             })
+                .then(response => response.json())
                 .then(data => {
                     if (data.message) {
                         Swal.fire({

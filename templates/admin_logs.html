@@ -5,137 +5,137 @@
 {% block header %}Admin Logs{% endblock %}
 
 {% block content %}
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Admin Transaction Logs</h5>
-            <button class="btn btn-danger" id="purgeLogsBtn">Purge All Logs</button>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead>
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Admin Transaction Logs</h5>
+        <button class="btn btn-danger" id="purgeLogsBtn">Purge All Logs</button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
                     <tr>
                         <th scope="col">Timestamp</th>
                         <th scope="col">Action</th>
                         <th scope="col">Details</th>
                     </tr>
-                    </thead>
-                    <tbody id="adminLogsBody">
+                </thead>
+                <tbody id="adminLogsBody">
                     <tr>
                         <td colspan="3" class="text-center">Loading logs...</td>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
 
-    <!-- Purge Logs Confirmation Modal -->
-    <div class="modal fade" id="purgeLogsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Purge Logs</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-danger">Warning: This will permanently delete ALL logs from the system. This action
-                        cannot be undone.</p>
-                    <p>Are you sure you want to continue?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmPurgeBtn">Purge All Logs</button>
-                </div>
+<!-- Purge Logs Confirmation Modal -->
+<div class="modal fade" id="purgeLogsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Purge Logs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Warning: This will permanently delete ALL logs from the system. This action cannot be undone.</p>
+                <p>Are you sure you want to continue?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmPurgeBtn">Purge All Logs</button>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        function loadAdminLogs() {
-            fetch('/api/get/admin/logs')
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('adminLogsBody');
-                    if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No logs found</td></tr>';
-                        return;
-                    }
-
-                    let html = '';
-                    data.forEach(log => {
-                        html += `
+<script>
+function loadAdminLogs() {
+    fetch('/api/get/admin/logs')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('adminLogsBody');
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No logs found</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(log => {
+                html += `
                     <tr>
                         <td>${new Date(log.timestamp).toLocaleString()}</td>
                         <td>${log.action}</td>
                         <td>${log.details}</td>
                     </tr>
                 `;
-                    });
-                    tableBody.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('adminLogsBody').innerHTML =
-                        '<tr><td colspan="3" class="text-center text-danger">Error loading logs</td></tr>';
-                });
-        }
-
-        // Purge logs button
-        document.getElementById('purgeLogsBtn').addEventListener('click', function () {
-            const purgeModal = new bootstrap.Modal(document.getElementById('purgeLogsModal'));
-            purgeModal.show();
-        });
-
-        // Confirm purge button
-        document.getElementById('confirmPurgeBtn').addEventListener('click', function () {
-            // Show loading state
-            Swal.fire({
-                title: 'Purging logs...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
             });
-
-            fetch('/api/admin/purgeLogs', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({}),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            const purgeModal = bootstrap.Modal.getInstance(document.getElementById('purgeLogsModal'));
-                            purgeModal.hide();
-                            loadAdminLogs(); // Reload logs
-                        });
-                    }
-                })
-                .catch((error) => {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'Failed to purge logs',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
-                });
+            tableBody.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('adminLogsBody').innerHTML = 
+                '<tr><td colspan="3" class="text-center text-danger">Error loading logs</td></tr>';
         });
+}
 
-        // Load admin logs on page load
-        window.addEventListener('load', function () {
-            loadAdminLogs();
+// Purge logs button
+document.getElementById('purgeLogsBtn').addEventListener('click', function() {
+    const purgeModal = new bootstrap.Modal(document.getElementById('purgeLogsModal'));
+    purgeModal.show();
+});
+
+// Update the purge logs button to ensure page refresh
+document.getElementById('confirmPurgeBtn').addEventListener('click', function() {
+    // Show loading state
+    Swal.fire({
+        title: 'Purging logs...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch('/api/admin/purgeLogs', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                const purgeModal = bootstrap.Modal.getInstance(document.getElementById('purgeLogsModal'));
+                purgeModal.hide();
+                // Always refresh the page after a successful action
+                location.reload();
+            });
+        }
+    })
+    .catch((error) => {
+        Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Failed to purge logs',
+            icon: 'error',
+            confirmButtonText: 'OK'
         });
-    </script>
+    });
+});
+
+// Load admin logs on page load
+window.addEventListener('load', function() {
+    loadAdminLogs();
+});
+</script>
 {% endblock %}

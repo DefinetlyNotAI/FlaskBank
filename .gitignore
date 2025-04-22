@@ -78,3 +78,4 @@ dmypy.json
 cython_debug/
 instance/*
 !instance/.gitignore
+secret
