@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import datetime, UTC
 from functools import wraps
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 
 import psutil
 import psycopg2
@@ -21,8 +21,6 @@ app = Flask(__name__, static_folder='static')
 # Configuration
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "EMPTY")
 db_url = os.environ.get("DATABASE_URL", "EMPTY")
-# Options: production or development
-RELEASE_TYPE = os.environ.get('RELEASE_TYPE', 'production')
 
 # We advise to keep this FALSE as it may undermine security and put too much pressure on servers if set to True, admins bypass this
 # Allow access to the endpoint if (overridden if ALLOW_PUBLIC_API_ACCESS = True):
@@ -401,12 +399,6 @@ class SqlQueryForm(Form):
 
 
 # Security Helpers
-def is_safe_url(target):
-    ref_url = urlparse(request.host_url)
-    test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
-
-
 def get_client_ip():
     if request.headers.getlist("X-Forwarded-For"):
         return request.headers.getlist("X-Forwarded-For")[0]
@@ -755,11 +747,6 @@ def login():
                     session['admin'] = True
 
             create_log("Login", f"User {wallet_name} logged in", "Admin")
-
-            # Redirect to a safe URL
-            next_page = request.args.get('next')
-            if next_page and is_safe_url(next_page):
-                return redirect(next_page)
             return redirect(url_for('home'))
 
         return render_template('login.html', error="Invalid credentials")
@@ -2435,7 +2422,4 @@ def initialize_database():
 
 
 if __name__ == '__main__':
-    if RELEASE_TYPE == 'production':
-        serve(app, host='0.0.0.0', port=5000)
-    else:
-        app.run(ssl_context='adhoc', debug=True, port=5000)
+    serve(app, host='0.0.0.0', port=5000)

@@ -92,7 +92,6 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
     - No need to configure anything manually except ENV VARIABLES:
          - `SECRET_KEY`: Flask Secret Key - Make this strong
          - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
-         - `FLASK_ENV`: `production` or `development`, production is the default and is more secure using waitress to serve the application, SECURITY RISK
 
 5. **Deploy!**
     - Wait for the build to finish
@@ -116,11 +115,15 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
    ```bash
    pip install -r requirements.txt
    ```
-3. **Start the application**
+3. **Set up the ENV variables**
+   - `SECRET_KEY`: Flask Secret Key - Make this strong
+   - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
+
+4. **Start the application**
    ```bash
    python app.py
    ```
-4. **Access the application**
+5. **Access the application**
    Open your browser and navigate to `http://localhost:5000`
 
 #### First-time Setup
