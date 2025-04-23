@@ -598,7 +598,6 @@ def get_server_health():
     """Get server health metrics"""
     try:
         # System metrics
-        cpu_percent = psutil.cpu_percent(interval=1)  # Get CPU usage with 1 second interval
         memory = psutil.virtual_memory()
         memory_percent = memory.percent
 
@@ -630,7 +629,9 @@ def get_server_health():
             {
                 "name": "Python Version",
                 "value": platform.python_version(),
-                "status": "good"
+                "status": "good" if platform.python_version_tuple() >= ('3',
+                                                                        '11') else "warning" if platform.python_version_tuple() >= (
+                    '3', '8') else "critical"
             },
             {
                 "name": "Database Connection Pool",
@@ -639,19 +640,18 @@ def get_server_health():
             },
             {
                 "name": "Memory Usage",
-                "value": f"{memory.used / (1024 * 1024):.2f} MB / {memory.total / (1024 * 1024):.2f} MB",
-                "status": "good" if memory_percent < 70 else "warning" if memory_percent < 90 else "critical"
+                "value": f"{memory.used / (1024 * 1024):.2f} MB / {memory.total / (1024 * 1024):.2f} MB ({memory_percent}%)",
+                "status": "good" if memory_percent < 80 else "warning" if memory_percent < 90 else "critical"
             },
             {
                 "name": "Disk Space",
-                "value": f"{disk.used / (1024 * 1024 * 1024):.2f} GB / {disk.total / (1024 * 1024 * 1024):.2f} GB",
+                "value": f"{disk.used / (1024 * 1024 * 1024):.2f} GB / {disk.total / (1024 * 1024 * 1024):.2f} GB ({disk_percent}%)",
                 "status": "good" if disk_percent < 80 else "warning" if disk_percent < 95 else "critical"
             }
         ]
 
         return {
             "system": {
-                "cpu_percent": cpu_percent,
                 "memory_percent": memory_percent,
                 "disk_percent": disk_percent
             },
@@ -667,7 +667,6 @@ def get_server_health():
         print(f"Error getting server health: {e}")
         return {
             "system": {
-                "cpu_percent": 0,
                 "memory_percent": 0,
                 "disk_percent": 0
             },
@@ -2215,8 +2214,9 @@ def wallet_page(wallet_name):
         return render_template('error.html', message="Wallet not found")
 
     settings = get_settings()
+    total_used = get_total_currency()
 
-    return render_template('wallet.html', user=user, settings=settings,
+    return render_template('wallet.html', user=user, settings=settings, total_used=total_used,
                            is_admin='admin' in session and session['admin'],
                            is_logged_in='wallet_name' in session)
 

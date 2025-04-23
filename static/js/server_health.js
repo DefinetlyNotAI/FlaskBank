@@ -34,24 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateSystemResources(system) {
-        // Update CPU usage
-        const cpuProgress = document.getElementById('cpuProgress');
-        cpuProgress.style.width = `${system.cpu_percent}%`;
-        cpuProgress.setAttribute('aria-valuenow', system.cpu_percent);
-        cpuProgress.textContent = `${system.cpu_percent}%`;
-
-        // Set color based on usage
-        if (system.cpu_percent > 80) {
-            cpuProgress.classList.remove('bg-info', 'bg-warning', 'bg-success');
-            cpuProgress.classList.add('bg-danger');
-        } else if (system.cpu_percent > 50) {
-            cpuProgress.classList.remove('bg-info', 'bg-danger', 'bg-success');
-            cpuProgress.classList.add('bg-warning');
-        } else {
-            cpuProgress.classList.remove('bg-warning', 'bg-danger', 'bg-info');
-            cpuProgress.classList.add('bg-success');
-        }
-
         // Update memory usage
         const memoryProgress = document.getElementById('memoryProgress');
         memoryProgress.style.width = `${system.memory_percent}%`;
