@@ -46,9 +46,6 @@ if os.environ.get("SECRET_KEY", "EMPTY") == "EMPTY":
     print("Major security issue, please set SECRET_KEY environment variable")
 
 
-# TODO - wallet has bug where DOM loading fails, and finally push
-
-
 # Database helper functions
 def get_db_connection():
     """Get a connection from the pool"""
