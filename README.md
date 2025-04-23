@@ -89,7 +89,10 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
 
 4. **Use default settings**
     - Vercel will auto-detect everything from `vercel.json`
-    - No need to configure anything manually
+    - No need to configure anything manually except ENV VARIABLES:
+         - `SECRET_KEY`: Flask Secret Key - Make this strong
+         - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
+         - `FLASK_ENV`: `production` or `development`, production is the default and is more secure using waitress to serve the application, SECURITY RISK
 
 5. **Deploy!**
     - Wait for the build to finish
