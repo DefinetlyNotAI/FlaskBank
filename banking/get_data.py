@@ -83,7 +83,7 @@ def get_server_health():
             {
                 "name": "System Uptime",
                 "value": uptime_str,
-                "status": "good " if uptime_seconds < 31536000 else "warning" if uptime_seconds < 63072000 else "critical"
+                "status": "good" if uptime_seconds < 31536000 else "warning" if uptime_seconds < 63072000 else "critical"
                 # 1 year then 2 years
             },
             {
