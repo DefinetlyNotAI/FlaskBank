@@ -231,26 +231,42 @@
 
         // Balance Chart
         const ctx = document.getElementById('balanceChart').getContext('2d');
+        const is_admin = window.location.pathname.includes('/wallet/admin');
         const balanceChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Your Balance', 'In Circulation (Others)', 'Available in Bank'],
+                labels: is_admin ? ['In Circulation', 'Not in Circulation'] : ['Your Balance', 'In Circulation (Others)', 'Available in Bank'],
                 datasets: [{
-                    data: [
-                        {{ user.current_currency }},
-                        {{ total_used - user.current_currency }},
-                        {{ settings.maximum_currency - total_used }}
-                    ],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 159, 64, 0.8)',
-                        'rgba(75, 192, 192, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 159, 64, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
+                    data: is_admin
+                        ? [
+                            {{ total_used }},
+                            {{ settings.maximum_currency - total_used }}
+                        ]
+                        : [
+                            {{ user.current_currency }},
+                            {{ total_used - user.current_currency }},
+                            {{ settings.maximum_currency - total_used }}
+                        ],
+                    backgroundColor: is_admin
+                        ? [
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ]
+                        : [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 159, 64, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ],
+                    borderColor: is_admin
+                        ? [
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ]
+                        : [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
                     borderWidth: 1
                 }]
             },
