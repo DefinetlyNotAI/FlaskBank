@@ -104,6 +104,10 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
 > - Flask backend in `api/index.py`
 > - Dependencies in `requirements.txt`
 
+> [!NOTE]
+> Optional, you can go to the file `banking/global_vars.py` and modify the ALLOW_PUBLIC_API_ACCESS` value,
+> though it's HIGHLY discouraged to do so, as it will allow anyone to access the API's without strong authentication.
+
 #### Installation (Locally)
 
 1. **Clone the repository**
@@ -125,6 +129,10 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
    ```
 5. **Access the application**
    Open your browser and navigate to `http://localhost:5000`
+
+> [!NOTE]
+> Optional, you can go to the file `banking/global_vars.py` and modify the ALLOW_PUBLIC_API_ACCESS` value,
+> though it's HIGHLY discouraged to do so, as it will allow anyone to access the API's without strong authentication.
 
 #### First-time Setup
 
