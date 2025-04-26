@@ -1757,7 +1757,15 @@ def serve_static(filename):
 
 
 if __name__ == '__main__':
-    if DB_POOL is not None:
+    try:
+        print("Database pool is initialized, starting the server...")
+        print("Checking database initialization...")
         init_db()
+        print("Rotating logs older than 30 days...")
         rotate_logs()  # Perform log rotation during startup
-    serve(app, host='0.0.0.0', port=5000)
+    except Exception as error:
+        print(f"Error during startup: {error}")
+        print("Database pool is not initialized. Please check your database connection.")
+    finally:
+        print("Starting server...")
+        serve(app, host='0.0.0.0', port=5000)

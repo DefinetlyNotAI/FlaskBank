@@ -24,9 +24,9 @@ def rotate_logs():
             commit=True
         )
 
-        create_log("Log Archival", "Log rotation completed successfully.", "Admin")
+        print("Log Archival: Log rotation completed successfully.")
     except Exception as e:
-        create_log("Log Archival", f"Error during log rotation: {e}.", "Admin")
+        print(f"Log Archival: Error during log rotation: {e}")
 
 
 # Create a log entry in the database

@@ -7,21 +7,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Quick access buttons
     document.getElementById('showUsers').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
         sqlQuery.value = 'SELECT * FROM users ORDER BY wallet_name';
         executeQuery();
     });
 
     document.getElementById('showRequests').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
         sqlQuery.value = 'SELECT * FROM requests ORDER BY timestamp DESC LIMIT 100';
         executeQuery();
     });
 
     document.getElementById('showLogs').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
         sqlQuery.value = 'SELECT * FROM logs ORDER BY timestamp DESC LIMIT 100';
         executeQuery();
     });
 
+    document.getElementById('showLogsArchive').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
+        sqlQuery.value = 'SELECT * FROM logs_archive ORDER BY timestamp DESC LIMIT 100';
+        executeQuery();
+    });
+
     document.getElementById('showSettings').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
         sqlQuery.value = 'SELECT * FROM settings';
         executeQuery();
     });
@@ -29,7 +39,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Execute query form
     sqlQueryForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        executeQuery();
+        if (!['showUsers', 'showRequests', 'showLogs', 'showSettings'].some(id => document.activeElement.id === id)) {
+            executeQuery();
+        }
     });
 
     // Update the executeQuery function to add data attributes for admin protection
