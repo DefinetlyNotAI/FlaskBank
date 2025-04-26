@@ -2,7 +2,7 @@ import platform
 import time
 
 import psutil
-from flask import g
+from flask import g, request
 
 from .database import execute_query_dict, execute_query, check_db_connection
 from .global_vars import DB_POOL
@@ -167,3 +167,11 @@ def update_admin_balance():
     except Exception as e:
         print(f"Error updating admin balance: {e}")
         return False
+
+
+# Get the client IP address
+def get_client_ip():
+    if request.headers.getlist("X-Forwarded-For"):
+        return request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        return request.remote_addr

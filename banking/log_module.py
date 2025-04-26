@@ -1,6 +1,5 @@
-from flask import request
-
 from .database import execute_query
+from .get_data import get_client_ip
 
 
 # Add log rotation for the logs table to prevent it from growing indefinitely
@@ -40,11 +39,3 @@ def create_log(action, details, private_level):
         )
     except Exception as e:
         print(f"Error creating log: {e}")
-
-
-# Get the client IP address
-def get_client_ip():
-    if request.headers.getlist("X-Forwarded-For"):
-        return request.headers.getlist("X-Forwarded-For")[0]
-    else:
-        return request.remote_addr
