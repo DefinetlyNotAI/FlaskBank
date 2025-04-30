@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(loadHealthData, 30000);
 
     function loadHealthData() {
-        fetch('/api/server/health')
+        fetch('/api/get/health')
             .then(response => response.json())
             .then(data => {
                 updateSystemResources(data.system);

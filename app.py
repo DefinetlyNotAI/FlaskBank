@@ -5,7 +5,14 @@ from flask import Flask, render_template, redirect, url_for, send_from_directory
 from waitress import serve
 from werkzeug.security import check_password_hash
 
-from banking import *
+from banking.database import init_db, is_db_initialized, execute_query, execute_query_dict
+from banking.decorator import api_access_control, admin_required, login_required
+from banking.get_data import get_settings, get_total_currency, get_user_by_wallet_name
+from banking.global_vars import DB_POOL, ALLOW_PUBLIC_API_ACCESS
+from banking.log_module import create_log, rotate_logs
+from banking.validate import validate_wallet_name
+from routes import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
+    register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
 
 # Configuration
 app = Flask(__name__, static_folder='static')
@@ -15,7 +22,12 @@ if os.environ.get("SECRET_KEY", "EMPTY") == "EMPTY":
     print("Major security issue, please set SECRET_KEY environment variable")
 
 # Register API routes
-register_api_routes(app)
+register_unused_api_routes(app)
+register_request_api_routes(app)
+register_get_api_routes(app)
+register_setup_api_routes(app)
+register_transfer_api_routes(app)
+register_admin_api_routes(app)
 
 
 # Routes

@@ -1,4 +1,3 @@
-from .api_routes import register_api_routes
 from .database import check_db_connection, init_db, is_db_initialized, execute_query, execute_query_dict
 from .decorator import api_access_control, admin_required, login_required
 from .form_validate import SetupForm, WalletForm, TransferForm, BankTransferForm, SqlQueryForm, ResetPasswordForm, \

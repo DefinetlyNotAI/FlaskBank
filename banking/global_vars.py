@@ -22,7 +22,7 @@ DB_POOL = None
 if DATABASE_URL != "EMPTY":
     try:
         DB_POOL = ThreadedConnectionPool(1, MAX_CONNECTION_POOL, DATABASE_URL)
-        print("Database connection pool initialized successfully")
+        print("\033[92mDatabase connection pool initialized successfully\033[0m")
     except Exception as err:
-        print(f"Error initializing database connection pool: {err}")
+        print("\033[91mError initializing database connection pool:\033[0m", err)
         DB_POOL = None
