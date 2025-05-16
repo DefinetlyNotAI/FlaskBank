@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 
 from banking.database import execute_query, execute_query_dict
 from banking.decorator import api_access_control, admin_required
-from banking.form_validate import SqlQueryForm, AdminActionForm, CurrencyForm
+from banking.form_types import SqlQueryForm, AdminActionForm, CurrencyForm
 from banking.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
 from banking.log_module import create_log

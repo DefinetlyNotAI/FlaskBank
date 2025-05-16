@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 
 from banking.database import execute_query, execute_query_dict
 from banking.decorator import api_access_control, login_required
-from banking.form_validate import ResetPasswordForm
+from banking.form_types import ResetPasswordForm
 from banking.get_data import get_settings, get_client_ip, get_user_by_wallet_name
 from banking.log_module import create_log
 from banking.validate import validate_wallet_name

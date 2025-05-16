@@ -1,9 +1,11 @@
+import os
+
 from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
 from banking.database import is_db_initialized, execute_query
 from banking.decorator import api_access_control, admin_required
-from banking.form_validate import SetupForm, WalletForm
+from banking.form_types import SetupForm, WalletForm
 from banking.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
 from banking.log_module import create_log
@@ -29,6 +31,20 @@ def register_setup_api_routes(app):
         admin_password = data.get('admin_password')
 
         try:
+            # Run DDL statements from schema.sql
+            schema_path = os.path.join(os.path.dirname(__file__), '../extras/schema.sql')
+            with open(schema_path, 'r') as f:
+                ddl_script = f.read()
+
+            # Assuming execute_query can run multiple statements if passed raw SQL
+            for statement in ddl_script.split(';'):
+                stmt = statement.strip()
+                if stmt:
+                    try:
+                        execute_query(stmt + ';', commit=True)
+                    except Exception as e:
+                        return jsonify({"error": "Failed to submit query to construct database", "details": f"{stmt} --> {e}"})
+
             # Insert settings
             execute_query(
                 "INSERT INTO settings (bank_name, currency_name, admin_password) VALUES (%s, %s, %s)",

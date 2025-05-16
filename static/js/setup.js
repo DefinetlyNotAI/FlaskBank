@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show loading state
         Swal.fire({
             title: 'Initializing...',
-            text: 'Setting up your bank system',
+            text: 'Setting up your bank system, This may take some time!',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();

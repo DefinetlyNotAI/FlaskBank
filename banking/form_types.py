@@ -33,7 +33,7 @@ class WalletForm(Form):
     ])
 
     def process(self, formdata=None, obj=None, data=None, **kwargs):
-        if data and 'initial_currency' in data:
+        if isinstance(data, dict) and 'initial_currency' in data:
             try:
                 data['initial_currency'] = float(data['initial_currency'])
             except ValueError:
@@ -103,7 +103,7 @@ class CurrencyForm(Form):
     ])
 
     def process(self, formdata=None, obj=None, data=None, **kwargs):
-        if data and 'amount' in data:
+        if isinstance(data, dict) and 'amount' in data:
             try:
                 data['amount'] = float(data['amount'])
             except ValueError:

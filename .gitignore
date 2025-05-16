@@ -79,3 +79,4 @@ cython_debug/
 instance/*
 !instance/.gitignore
 secret
+/extras/password

@@ -22,7 +22,7 @@ def register_unused_api_routes(app):
     def api_init_database():
         """API endpoint to initialize database tables"""
         if init_db():
-            return jsonify({"status": "success", "message": "Database tables created successfully"})
+            return jsonify({"status": "success", "message": "Database tables created successfully"}), 200
         else:
             return jsonify({"status": "error",
                             "message": "Failed to create database tables. Please check your database configuration."}), 500

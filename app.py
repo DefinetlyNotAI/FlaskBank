@@ -11,7 +11,7 @@ from banking.get_data import get_settings, get_total_currency, get_user_by_walle
 from banking.global_vars import DB_POOL, ALLOW_PUBLIC_API_ACCESS
 from banking.log_module import create_log, rotate_logs
 from banking.validate import validate_wallet_name
-from routes import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
+from api import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
     register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
 
 # Configuration
@@ -47,6 +47,10 @@ def home():
 
 @app.route('/setup', methods=['GET', 'POST'])
 def setup_page():
+    if DB_POOL is None:
+        return render_template('error.html',
+                               message="Please setup the required ENV variables for DB URL")
+
     if is_db_initialized():
         return redirect(url_for('home'))
 
@@ -76,6 +80,9 @@ def setup_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if not is_db_initialized():
+        return redirect(url_for('setup_page'))
+
     if request.method == 'POST':
         wallet_name = request.form.get('wallet_name')
         password = request.form.get('password')
@@ -293,6 +300,10 @@ def admin_sql_page():
 @app.route('/server-health')
 def server_health_page():
     """Public page showing server health metrics"""
+    if not is_db_initialized():
+        return render_template('error.html',
+                               message="The DB is not initialised so the server health page is locked from rendering")
+
     settings = get_settings()
 
     return render_template('server_health.html', settings=settings,
@@ -352,7 +363,8 @@ if __name__ == '__main__':
     try:
         print("Database pool is initialized, starting the server...")
         print("Checking database initialization...")
-        init_db()
+        if not init_db():
+            exit("Oops! The DB init failed!! This means you have a issue with the database connection!")
         print("Rotating logs older than 30 days...")
         rotate_logs()  # Perform log rotation during startup
     except Exception as error:

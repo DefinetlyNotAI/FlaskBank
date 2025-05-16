@@ -259,8 +259,17 @@ def is_db_initialized():
         return False
 
     try:
+        # Check if settings table exists (Postgres example)
+        result = execute_query(
+            "SELECT to_regclass('public.settings')"
+        )
+        if not result or not result[0][0]:
+            return False
+
+        # Table exists, now check for rows
         result = execute_query("SELECT COUNT(*) FROM settings")
         return result and result[0][0] > 0
+
     except Exception as e:
         print(f"Error checking if DB is initialized: {e}")
         return False
