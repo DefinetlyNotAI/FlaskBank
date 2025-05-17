@@ -4,13 +4,29 @@ import uuid
 from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
-from banking.database import execute_query, execute_query_dict
-from banking.decorator import api_access_control, admin_required
-from banking.form_types import SqlQueryForm, AdminActionForm, CurrencyForm
-from banking.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
+from bank_lib.database import execute_query, execute_query_dict
+from bank_lib.decorator import api_access_control, admin_required
+from bank_lib.form_types import SqlQueryForm, AdminActionForm, CurrencyForm
+from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
-from banking.log_module import create_log
-from banking.validate import validate_uuid
+from bank_lib.log_module import create_log
+from bank_lib.validate import validate_uuid
+
+
+def sync_admin_wallet():
+    try:
+        settings = get_settings()
+        total_used = get_total_currency()
+        expected_admin_balance = settings['maximum_currency'] - total_used
+
+        # Update the admin wallet to reflect the remainder
+        execute_query(
+            "UPDATE users SET current_currency = %s WHERE wallet_name = 'admin'",
+            (expected_admin_balance,),
+            commit=True
+        )
+    except Exception as e:
+        print(e)
 
 
 def register_admin_api_routes(app):
@@ -64,6 +80,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error burning wallet: {e}")
             return jsonify({"error": f"Failed to burn wallet: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/freezeWallet', methods=['POST'])
     @api_access_control
@@ -215,6 +233,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error resetting wallet: {e}")
             return jsonify({"error": f"Failed to reset wallet: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/approveRequest', methods=['POST'])
     @api_access_control
@@ -330,7 +350,6 @@ def register_admin_api_routes(app):
                                            f"Refund request from {request_item['wallet_name']} doesn't match original sender {sender}",
                                            "Admin")
                                 return jsonify({"error": "Refund requester doesn't match original sender"}), 400
-
             elif request_item['request_type'] == "PasswordReset":
                 # Process password reset logic here
                 user = get_user_by_wallet_name(request_item['wallet_name'])
@@ -426,6 +445,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error approving request: {e}")
             return jsonify({"error": f"Failed to approve request: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/rejectRequest', methods=['POST'])
     @api_access_control
@@ -537,6 +558,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error minting currency: {e}")
             return jsonify({"error": f"Failed to mint currency: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/burnCurrency', methods=['POST'])
     @api_access_control
@@ -589,6 +612,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error burning currency: {e}")
             return jsonify({"error": f"Failed to burn currency: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/sql', methods=['POST'])
     @api_access_control
@@ -621,6 +646,8 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error executing SQL query: {e}")
             return jsonify({"error": f"Query failed: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()
 
     @app.route('/api/admin/delete-record', methods=['POST'])
     @api_access_control
@@ -659,3 +686,5 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error deleting record: {e}")
             return jsonify({"error": f"Failed to delete record: {str(e)}"}), 500
+        finally:
+            sync_admin_wallet()

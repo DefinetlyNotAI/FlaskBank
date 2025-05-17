@@ -3,12 +3,12 @@ import uuid
 from flask import jsonify, request, session
 from werkzeug.security import generate_password_hash
 
-from banking.database import execute_query, execute_query_dict
-from banking.decorator import api_access_control, login_required
-from banking.form_types import ResetPasswordForm
-from banking.get_data import get_settings, get_client_ip, get_user_by_wallet_name
-from banking.log_module import create_log
-from banking.validate import validate_wallet_name
+from bank_lib.database import execute_query, execute_query_dict
+from bank_lib.decorator import api_access_control, login_required
+from bank_lib.form_types import ResetPasswordForm
+from bank_lib.get_data import get_settings, get_client_ip, get_user_by_wallet_name
+from bank_lib.log_module import create_log
+from bank_lib.validate import validate_wallet_name
 
 
 def register_request_api_routes(app):

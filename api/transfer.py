@@ -2,12 +2,12 @@ import uuid
 
 from flask import jsonify, request, session
 
-from banking.database import execute_query
-from banking.decorator import api_access_control, admin_required, login_required
-from banking.form_types import TransferForm, BankTransferForm
-from banking.get_data import get_settings, get_client_ip, get_total_currency, get_user_by_wallet_name, \
+from bank_lib.database import execute_query
+from bank_lib.decorator import api_access_control, admin_required, login_required
+from bank_lib.form_types import TransferForm, BankTransferForm
+from bank_lib.get_data import get_settings, get_client_ip, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
-from banking.log_module import create_log
+from bank_lib.log_module import create_log
 
 
 def register_transfer_api_routes(app):

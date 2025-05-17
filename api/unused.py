@@ -1,7 +1,7 @@
 from flask import jsonify
 
-from banking.database import check_db_connection, init_db
-from banking.decorator import api_access_control, admin_required
+from bank_lib.database import check_db_connection, init_db
+from bank_lib.decorator import api_access_control, admin_required
 
 
 def register_unused_api_routes(app):

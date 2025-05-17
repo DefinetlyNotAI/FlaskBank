@@ -42,6 +42,3 @@ function confirmAction(title, text, icon, confirmButtonText, callback) {
         }
     })
 }
-
-// Form validation helper
-// Format date helper

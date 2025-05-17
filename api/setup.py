@@ -3,12 +3,12 @@ import os
 from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
-from banking.database import is_db_initialized, execute_query
-from banking.decorator import api_access_control, admin_required
-from banking.form_types import SetupForm, WalletForm
-from banking.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
+from bank_lib.database import is_db_initialized, execute_query
+from bank_lib.decorator import api_access_control, admin_required
+from bank_lib.form_types import SetupForm, WalletForm
+from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
-from banking.log_module import create_log
+from bank_lib.log_module import create_log
 
 
 def register_setup_api_routes(app):
@@ -47,8 +47,8 @@ def register_setup_api_routes(app):
 
             # Insert settings
             execute_query(
-                "INSERT INTO settings (bank_name, currency_name, admin_password) VALUES (%s, %s, %s)",
-                (bank_name, currency_name, generate_password_hash(admin_password)),
+                "INSERT INTO settings (bank_name, currency_name) VALUES (%s, %s, %s)",
+                (bank_name, currency_name),
                 commit=True
             )
 

@@ -33,15 +33,14 @@ CREATE TABLE requests (
 
 -- DDL for table: settings
 CREATE TABLE settings (
+     id SERIAL PRIMARY KEY NOT NULL ,
      maximum_currency double precision DEFAULT 1000000.0,
      allow_debts boolean DEFAULT false,
      allow_self_review boolean DEFAULT false,
-     id SERIAL PRIMARY KEY NOT NULL ,
      allow_leaderboard boolean DEFAULT true,
      allow_public_logs boolean DEFAULT true,
      bank_name character varying NOT NULL,
      currency_name character varying NOT NULL,
-     admin_password character varying NOT NULL
 );
 
 -- DDL for table: users

@@ -75,6 +75,9 @@ graph TD
 
 ### Installation
 
+> [!WARNING]
+> This only supports 3.11+ versions of Python
+
 #### Installation (Vercel)
 
 This project is ready to deploy on [Vercel](https://vercel.com) with just a few clicks.

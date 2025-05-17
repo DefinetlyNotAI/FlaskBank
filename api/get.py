@@ -1,9 +1,9 @@
 from flask import jsonify, request, session
 
-from banking.database import execute_query_dict
-from banking.decorator import api_access_control, admin_required, login_required
-from banking.get_data import get_settings, get_total_currency, get_server_health, get_user_by_wallet_name
-from banking.validate import validate_wallet_name
+from bank_lib.database import execute_query_dict
+from bank_lib.decorator import api_access_control, admin_required, login_required
+from bank_lib.get_data import get_settings, get_total_currency, get_server_health, get_user_by_wallet_name
+from bank_lib.validate import validate_wallet_name
 
 
 def register_get_api_routes(app):
