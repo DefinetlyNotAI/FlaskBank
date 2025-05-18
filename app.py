@@ -425,9 +425,10 @@ if __name__ == '__main__':
             exit("Oops! The DB init failed!! This means you have a issue with the database connection!")
         print("Rotating logs older than 30 days...")
         rotate_logs()  # Perform log rotation during startup
-    except Exception as error:
-        print(f"Error during startup: {error}")
+    except Exception as err:
+        print(f"Error during startup: {err}")
         print("Database pool is not initialized. Please check your database connection.")
     finally:
         print("Server Started!")
-        serve(app, host='0.0.0.0', port=5000)
+        app.run(debug=True)
+        # serve(app, host='0.0.0.0', port=5000)
