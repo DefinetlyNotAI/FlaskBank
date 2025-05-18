@@ -11,6 +11,15 @@ document.addEventListener('DOMContentLoaded', function () {
         sqlQuery.value = 'SELECT * FROM users ORDER BY wallet_name';
         executeQuery();
     });
+    document.getElementById('changeBankName').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
+        sqlQuery.value = 'UPDATE settings SET bank_name = \'New Bank Name\' WHERE id = 1;';
+    });
+
+    document.getElementById('changeCurrencyName').addEventListener('click', function () {
+        document.getElementById('sqlQuery').value = '';
+        sqlQuery.value = 'UPDATE settings SET currency_name = \'New Currency Name\' WHERE id = 1; ';
+    });
 
     document.getElementById('showRequests').addEventListener('click', function () {
         document.getElementById('sqlQuery').value = '';
@@ -39,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Execute query form
     sqlQueryForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        if (!['showUsers', 'showRequests', 'showLogs', 'showSettings'].some(id => document.activeElement.id === id)) {
+        if (!['showUsers', 'showRequests', 'showLogs', 'showSettings', 'showLogsArchive'].some(id => document.activeElement.id === id)) {
             executeQuery();
         }
     });

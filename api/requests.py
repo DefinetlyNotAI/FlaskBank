@@ -1,4 +1,5 @@
 import uuid
+import re
 
 from flask import jsonify, request, session
 from werkzeug.security import generate_password_hash
@@ -20,6 +21,7 @@ def register_request_api_routes(app):
         wallet_name = data.get('wallet_name')
         password = data.get('password')
         reason = data.get('reason')
+        FORBIDDEN_REASON_CHARS = re.compile(r"[|\'\"`;]")
 
         if not validate_wallet_name(wallet_name):
             return jsonify({"error": "Wallet name can only contain letters, numbers, and underscores"}), 400
@@ -27,7 +29,7 @@ def register_request_api_routes(app):
         if not password or len(password) < 8:
             return jsonify({"error": "Password must be at least 8 characters long"}), 400
 
-        if not reason or len(reason) < 3:
+        if not reason or len(reason) < 3 or FORBIDDEN_REASON_CHARS.search(reason):
             return jsonify({"error": "Reason must be at least 3 characters long"}), 400
 
         # Check if wallet already exists

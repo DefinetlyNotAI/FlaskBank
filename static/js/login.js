@@ -1,7 +1,9 @@
 document.getElementById('submitWalletRequest').addEventListener('click', function () {
-    const walletName = document.getElementById('requestWalletName').value;
-    const password = document.getElementById('requestPassword').value;
-    const reason = document.getElementById('requestReason').value;
+    const walletName = document.getElementById('requestWalletName').value.trim();
+    const password = document.getElementById('requestPassword').value.trim();
+    const reason = document.getElementById('requestReason').value.trim();
+
+    const forbiddenChars = /[|'"`;]/;
 
     // Basic validation
     if (!walletName || !password || !reason) {
@@ -28,6 +30,16 @@ document.getElementById('submitWalletRequest').addEventListener('click', functio
         Swal.fire({
             title: 'Error!',
             text: 'Password must be at least 8 characters long',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (forbiddenChars.test(reason)) {
+        Swal.fire({
+            title: 'Error!',
+            text: "Reason contains forbidden characters: | ' \" ; `",
             icon: 'error',
             confirmButtonText: 'OK'
         });
