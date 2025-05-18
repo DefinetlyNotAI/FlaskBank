@@ -1,32 +1,39 @@
+import logging
 import os
 import secrets
 from datetime import datetime, UTC, timedelta
 
 import requests as req
 from flask import Flask, render_template, redirect, url_for, send_from_directory, request, session
+from flask import jsonify
 from flask_talisman import Talisman
-from werkzeug.security import check_password_hash
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFError
+from werkzeug.exceptions import BadRequest, HTTPException
+from werkzeug.security import check_password_hash
 
 from api import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
     register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
 from api.admin import sync_admin_wallet
 from bank_lib import SetupForm
 from bank_lib.database import init_db, is_db_initialized, execute_query, execute_query_dict
-from bank_lib.decorator import api_access_control, admin_required, login_required
-
-from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransferForm, RefundForm, SqlQueryForm
+from bank_lib.decorator import admin_required, login_required
 from bank_lib.form_CSRF_validators import LoginForm, RequestWalletForm, FreezeForm, ResetForm, BurnForm, \
     MintCurrencyForm, BurnCurrencyForm, CreateWalletForm, RulesForm, RequestForm, AdminLogForm, AdminRequestsForm
-
+from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransferForm, RefundForm, SqlQueryForm
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name
-from bank_lib.global_vars import DB_POOL, ALLOW_PUBLIC_API_ACCESS
+from bank_lib.global_vars import DB_POOL
 from bank_lib.log_module import create_log, rotate_logs
 from bank_lib.validate import validate_wallet_name
 
-from flask_wtf.csrf import CSRFError
-from flask import jsonify
-
+# Set up logging once in your app setup code (if not already done)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
 # Configuration
 app = Flask(__name__, static_folder='static')
@@ -65,10 +72,39 @@ register_transfer_api_routes(app)
 register_admin_api_routes(app)
 
 
+# Error handlers
+@app.errorhandler(BadRequest)
+def handle_bad_request(e):
+    if wants_html_response():
+        return render_template('error.html', message=f"Invalid request data => {e.description}"), 400
+    else:
+        return jsonify(error="Invalid request data"), 400
+
+
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     # You can return a JSON error or render a template as you prefer
     return jsonify({"error": "CSRF validation failed", "details": str(e.description)}), 400
+
+
+@app.errorhandler(Exception)
+def handle_general_error(e):
+    if isinstance(e, HTTPException):
+        code = e.code
+        description = e.description
+    else:
+        code = 500
+        description = "An unexpected error occurred."
+
+    if wants_html_response():
+        return render_template('error.html', message=description), code
+    else:
+        return jsonify(error=description), code
+
+
+def wants_html_response():
+    best = request.accept_mimetypes.best_match(['application/json', 'text/html'])
+    return best == 'text/html' and request.accept_mimetypes[best] > request.accept_mimetypes['application/json']
 
 
 # Routes
@@ -83,7 +119,7 @@ def home():
 
     settings = get_settings()
     return render_template('home.html', settings=settings, is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 @app.route('/setup', methods=['GET', 'POST'])
@@ -116,7 +152,7 @@ def setup_page():
         # Check if the API call failed
         if response.status_code != 200:
             error_message = response.json().get('error', 'Unknown error occurred')
-            return render_template('setup.html', error=error_message, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+            return render_template('setup.html', error=error_message,
                                    settings=settings,
                                    is_admin='admin' in session and session['admin'],
                                    is_logged_in='wallet_name' in session, setupForm=setupForm)
@@ -124,7 +160,7 @@ def setup_page():
         # Redirect to home if setup is successful
         return redirect(url_for('home'))
 
-    return render_template('setup.html', allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
+    return render_template('setup.html', settings=settings,
                            is_admin='admin' in session and session['admin'],
                            is_logged_in='wallet_name' in session, setupForm=setupForm)
 
@@ -146,7 +182,7 @@ def login():
         # Input validation
         if not validate_wallet_name(wallet_name):
             return render_template('login.html', error="Invalid wallet name format",
-                                   allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
+                                   settings=settings,
                                    is_admin='admin' in session and session['admin'],
                                    is_logged_in='wallet_name' in session, loginForm=loginForm,
                                    requestWalletForm=requestWalletForm)
@@ -169,12 +205,12 @@ def login():
             create_log("Login", f"User {wallet_name} logged in", "Admin")
             return redirect(url_for('home'))
 
-        return render_template('login.html', error="Invalid credentials", allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+        return render_template('login.html', error="Invalid credentials",
                                is_admin='admin' in session and session['admin'],
                                is_logged_in='wallet_name' in session, loginForm=loginForm,
                                requestWalletForm=requestWalletForm)
 
-    return render_template('login.html', allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
+    return render_template('login.html', settings=settings,
                            is_admin='admin' in session and session['admin'],
                            is_logged_in='wallet_name' in session, loginForm=loginForm,
                            requestWalletForm=requestWalletForm)
@@ -192,6 +228,8 @@ def logout():
 # Web UI routes
 @app.route('/wallet/<wallet_name>')
 def wallet_page(wallet_name):
+    settings = get_settings()
+
     if not validate_wallet_name(wallet_name):
         return render_template('error.html', message="Invalid wallet name format")
 
@@ -200,7 +238,6 @@ def wallet_page(wallet_name):
     if not user:
         return render_template('error.html', message="Wallet not found")
 
-    settings = get_settings()
     total_used = get_total_currency()
 
     freezeForm = FreezeForm()
@@ -212,7 +249,7 @@ def wallet_page(wallet_name):
 
     return render_template('wallet.html', user=user, settings=settings, total_used=total_used,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           is_logged_in='wallet_name' in session,
                            resetForm=resetForm, burnForm=burnForm, freezeForm=freezeForm, transferForm=transferForm,
                            resetPasswordForm=resetPasswordForm, bankTransferForm=bankTransferForm)
 
@@ -230,7 +267,7 @@ def leaderboard_page():
 
     return render_template('leaderboard.html', users=users, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 @app.route('/logs')
@@ -246,7 +283,7 @@ def logs_page():
 
     return render_template('logs.html', logs=logs, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 @app.route('/user/logs')
@@ -263,7 +300,7 @@ def user_logs_page():
 
     return render_template('user_logs.html', logs=logs, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           is_logged_in='wallet_name' in session,
                            refundForm=refundForm)
 
 
@@ -280,7 +317,7 @@ def user_requests_page():
 
     return render_template('user_requests.html', requests=requests, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 @app.route('/admin/logs')
@@ -294,7 +331,7 @@ def admin_logs_page():
 
     return render_template('admin_logs.html', logs=logs, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, adminLogForm=adminLogForm)
+                           adminLogForm=adminLogForm)
 
 
 @app.route('/admin/treasury')
@@ -312,7 +349,7 @@ def admin_treasury_page():
                            total_used=total_used,
                            available=settings['maximum_currency'] - total_used,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, burnForm=burnForm, mintForm=mintForm)
+                           burnForm=burnForm, mintForm=mintForm)
 
 
 @app.route('/admin/wallets')
@@ -328,12 +365,14 @@ def admin_wallets_page():
 
     return render_template('admin_wallets.html', users=users, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, createWalletForm=createWalletForm)
+                           createWalletForm=createWalletForm)
 
 
 @app.route('/admin/wallet/<wallet_name>')
 @admin_required
 def admin_wallet_detail_page(wallet_name):
+    settings = get_settings()
+
     if not validate_wallet_name(wallet_name):
         return render_template('error.html', message="Invalid wallet name format")
 
@@ -346,7 +385,6 @@ def admin_wallet_detail_page(wallet_name):
         "SELECT * FROM requests WHERE wallet_name = %s AND status = 'Pending'",
         (wallet_name,)
     )
-    settings = get_settings()
     freezeForm = FreezeForm()
     burnForm = BurnForm()
     resetForm = ResetForm()
@@ -354,7 +392,7 @@ def admin_wallet_detail_page(wallet_name):
 
     return render_template('admin_wallet_detail.html', user=user, requests=requests,
                            settings=settings, is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           is_logged_in='wallet_name' in session,
                            bankTransferForm=bankTransferForm, freezeForm=freezeForm, resetForm=resetForm,
                            burnForm=burnForm)
 
@@ -367,7 +405,7 @@ def admin_rules_page():
 
     return render_template('admin_rules.html', settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, rulesForm=rulesForm)
+                           rulesForm=rulesForm)
 
 
 @app.route('/admin/requests')
@@ -382,7 +420,7 @@ def admin_requests_page():
 
     return render_template('admin_requests.html', requests=requests, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, adminRequestsForm=adminRequestsForm)
+                           adminRequestsForm=adminRequestsForm)
 
 
 @app.route('/admin/sql')
@@ -396,22 +434,22 @@ def admin_sql_page():
 
     return render_template('admin_sql.html', settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, sqlQueryForm=sqlQueryForm)
+                           sqlQueryForm=sqlQueryForm)
 
 
 @app.route('/server-health')
 @admin_required
 def server_health_page():
     """Public page showing server health metrics"""
+    settings = get_settings()
+
     if not is_db_initialized():
         return render_template('error.html',
                                message="The DB is not initialised so the server health page is locked from rendering")
 
-    settings = get_settings()
-
     return render_template('server_health.html', settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 @app.route('/requests')
@@ -429,21 +467,8 @@ def requests_page():
 
     return render_template('requests.html', requests=requests, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS, requestForm=requestForm)
-
-
-@app.route('/api')
-def api_docs():
-    if ALLOW_PUBLIC_API_ACCESS:
-        settings = get_settings()
-        if not settings:
-            return render_template('error.html', message="Database tables are not initialized")
-
-        return render_template('api_docs.html', is_admin='admin' in session and session['admin'],
-                               is_logged_in='wallet_name' in session, settings=settings,
-                               allow_api_access=ALLOW_PUBLIC_API_ACCESS)
-    return render_template('error.html',
-                           message="API access is restricted due to security reasons (Bank has decided this).")
+                           is_logged_in='wallet_name' in session,
+                           requestForm=requestForm)
 
 
 @app.route('/about')
@@ -453,16 +478,15 @@ def about():
 
     settings = get_settings()
     if not settings:
-        return render_template('error.html', message="Database tables are not initialized")
+        return render_template('error.html', message="Database tables are not initialized", settings=settings)
 
     return render_template('about.html', settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session)
 
 
 # Serve static files
 @app.route('/static/<path:filename>')
-@api_access_control
 @admin_required
 def serve_static(filename):
     return send_from_directory(app.static_folder, filename)
@@ -470,16 +494,17 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     try:
-        print("Database pool is initialized, starting the server...")
-        print("Checking database initialization...")
+        logging.info("Database pool is initialized, starting the server...")
+        logging.info("Checking database initialization...")
         if not init_db():
-            exit("Oops! The DB init failed!! This means you have a issue with the database connection!")
-        print("Rotating logs older than 30 days...")
+            logging.error("Oops! The DB init failed!! This means you have a issue with the database connection!")
+            exit(1)
+        logging.info("Rotating logs older than 30 days...")
         rotate_logs()  # Perform log rotation during startup
     except Exception as err:
-        print(f"Error during startup: {err}")
-        print("Database pool is not initialized. Please check your database connection.")
+        logging.error(f"Error during startup: {err}")
+        logging.warning("Database pool is not initialized. Please check your database connection.")
     finally:
-        print("Server Started!")
+        logging.info("Server Started!")
         app.run(debug=True)
         # serve(app, host='0.0.0.0', port=5000)

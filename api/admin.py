@@ -5,7 +5,7 @@ from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
 from bank_lib.database import execute_query, execute_query_dict
-from bank_lib.decorator import api_access_control, admin_required
+from bank_lib.decorator import admin_required
 from bank_lib.form_validators import SqlQueryForm, AdminActionForm, CurrencyForm
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
@@ -31,7 +31,6 @@ def sync_admin_wallet():
 
 def register_admin_api_routes(app):
     @app.route('/api/admin/burnWallet', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_burn_wallet():
         data = request.json
@@ -84,7 +83,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/freezeWallet', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_freeze_wallet():
         data = request.json
@@ -132,7 +130,6 @@ def register_admin_api_routes(app):
             return jsonify({"error": f"Failed to freeze wallet: {str(e)}"}), 500
 
     @app.route('/api/admin/unfreezeWallet', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_unfreeze_wallet():
         data = request.json
@@ -177,7 +174,6 @@ def register_admin_api_routes(app):
             return jsonify({"error": f"Failed to unfreeze wallet: {str(e)}"}), 500
 
     @app.route('/api/admin/resetWallet', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_reset_wallet():
         data = request.json
@@ -237,7 +233,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/approveRequest', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_approve_request():
         data = request.json
@@ -449,7 +444,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/rejectRequest', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_reject_request():
         data = request.json
@@ -497,7 +491,6 @@ def register_admin_api_routes(app):
             return jsonify({"error": f"Failed to reject request: {str(e)}"}), 500
 
     @app.route('/api/admin/purgeLogs', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_purge_logs():
         try:
@@ -515,7 +508,6 @@ def register_admin_api_routes(app):
             return jsonify({"error": f"Failed to purge logs: {str(e)}"}), 500
 
     @app.route('/api/admin/mintCurrency', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_mint_currency():
         data = request.json
@@ -562,7 +554,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/burnCurrency', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_burn_currency():
         data = request.json
@@ -616,7 +607,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/sql', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_sql():
         """Execute SQL query"""
@@ -650,7 +640,6 @@ def register_admin_api_routes(app):
             sync_admin_wallet()
 
     @app.route('/api/admin/delete-record', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_admin_delete_record():
         """Delete a record from a table"""

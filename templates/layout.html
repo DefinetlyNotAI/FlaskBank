@@ -35,15 +35,10 @@
                         <a class="nav-link" href="/logs">Public Logs</a>
                     </li>
                 {% endif %}
-                {% if settings and allow_api_access %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/api">API Docs</a>
-                </li>
                 {% if settings and is_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="/server-health">Server Health</a>
                     </li>
-                {% endif %}
                 {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="/about">About</a>

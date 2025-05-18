@@ -93,8 +93,8 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
 4. **Use default settings**
     - Vercel will auto-detect everything from `vercel.json`
     - No need to configure anything manually except ENV VARIABLES:
-         - `SECRET_KEY`: Flask Secret Key - Make this strong
-         - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
+        - `SECRET_KEY`: Flask Secret Key - Make this strong
+        - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
 
 5. **Deploy!**
     - Wait for the build to finish
@@ -123,8 +123,8 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
    pip install -r requirements.txt
    ```
 3. **Set up the ENV variables**
-   - `SECRET_KEY`: Flask Secret Key - Make this strong
-   - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
+    - `SECRET_KEY`: Flask Secret Key - Make this strong
+    - `DATABASE_URL`: Postgresql access URL - I recommend AIVEN
 
 4. **Start the application**
    ```bash

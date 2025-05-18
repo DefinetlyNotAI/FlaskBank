@@ -1,11 +1,11 @@
-import uuid
 import re
+import uuid
 
 from flask import jsonify, request, session
 from werkzeug.security import generate_password_hash
 
 from bank_lib.database import execute_query, execute_query_dict
-from bank_lib.decorator import api_access_control, login_required
+from bank_lib.decorator import login_required
 from bank_lib.form_validators import ResetPasswordForm
 from bank_lib.get_data import get_settings, get_client_ip, get_user_by_wallet_name
 from bank_lib.log_module import create_log
@@ -14,7 +14,6 @@ from bank_lib.validate import validate_wallet_name
 
 def register_request_api_routes(app):
     @app.route('/api/request/wallet', methods=['POST'])
-    @api_access_control
     def api_request_wallet():
         """API endpoint to request a new wallet"""
         data = request.json
@@ -69,7 +68,6 @@ def register_request_api_routes(app):
             return jsonify({"error": f"Failed to submit wallet creation request: {str(e)}"}), 500
 
     @app.route('/api/request/refund', methods=['POST'])
-    @api_access_control
     @login_required
     def api_request_refund():
         data = request.json
@@ -133,7 +131,6 @@ def register_request_api_routes(app):
             return jsonify({"error": f"Refund request failed: {str(e)}"}), 500
 
     @app.route('/api/request/resetPassword', methods=['POST'])
-    @api_access_control
     @login_required
     def api_request_reset_password():
         data = request.json

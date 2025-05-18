@@ -4,7 +4,7 @@ from flask import jsonify, request
 from werkzeug.security import generate_password_hash
 
 from bank_lib.database import is_db_initialized, execute_query
-from bank_lib.decorator import api_access_control, admin_required
+from bank_lib.decorator import admin_required
 from bank_lib.form_validators import SetupForm, WalletForm
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
@@ -13,7 +13,6 @@ from bank_lib.log_module import create_log
 
 def register_setup_api_routes(app):
     @app.route('/api/setup', methods=['POST'])
-    @api_access_control
     def api_setup():
         if is_db_initialized():
             return jsonify({"error": "Bank already initialized"}), 400
@@ -43,7 +42,8 @@ def register_setup_api_routes(app):
                     try:
                         execute_query(stmt + ';', commit=True)
                     except Exception as e:
-                        return jsonify({"error": "Failed to submit query to construct database", "details": f"{stmt} --> {e}"})
+                        return jsonify(
+                            {"error": "Failed to submit query to construct database", "details": f"{stmt} --> {e}"})
 
             # Insert settings
             execute_query(
@@ -68,7 +68,6 @@ def register_setup_api_routes(app):
             return jsonify({"error": f"Setup failed: {str(e)}"}), 500
 
     @app.route('/api/setup/wallet', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_setup_wallet():
         data = request.json
@@ -119,7 +118,6 @@ def register_setup_api_routes(app):
             return jsonify({"error": f"Failed to create wallet: {str(e)}"}), 500
 
     @app.route('/api/setup/rules', methods=['POST'])
-    @api_access_control
     @admin_required
     def api_setup_rules():
         data = request.json

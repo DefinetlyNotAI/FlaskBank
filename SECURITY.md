@@ -8,7 +8,6 @@
 | 1.1.x   | :x:                |
 | 1.0.x   | :x:                |
 
-
 ## Reporting a Vulnerability
 
 If you believe you have found a security vulnerability in our project, we encourage you to report it to us. Your report

@@ -1,21 +1,19 @@
 from flask import jsonify, request, session
 
 from bank_lib.database import execute_query_dict
-from bank_lib.decorator import api_access_control, admin_required, login_required
+from bank_lib.decorator import admin_required, login_required
 from bank_lib.get_data import get_settings, get_total_currency, get_server_health, get_user_by_wallet_name
 from bank_lib.validate import validate_wallet_name
 
 
 def register_get_api_routes(app):
     @app.route('/api/get/health', methods=['GET'])
-    @api_access_control
     @admin_required
     def api_server_health():
         """Get server health metrics"""
         return jsonify(get_server_health())
 
     @app.route('/api/get/wallet', methods=['GET'])
-    @api_access_control
     def api_get_wallet():
         wallet_name = request.args.get('wallet_name')
 
@@ -38,7 +36,6 @@ def register_get_api_routes(app):
         })
 
     @app.route('/api/get/leaderboard', methods=['GET'])
-    @api_access_control
     def api_get_leaderboard():
         settings = get_settings()
 
@@ -67,7 +64,6 @@ def register_get_api_routes(app):
         return jsonify(leaderboard)
 
     @app.route('/api/get/logs', methods=['GET'])
-    @api_access_control
     def api_get_logs():
         settings = get_settings()
 
@@ -96,7 +92,6 @@ def register_get_api_routes(app):
         return jsonify(log_list)
 
     @app.route('/api/get/wallet/logs', methods=['GET'])
-    @api_access_control
     @login_required
     def api_get_wallet_logs():
         try:
@@ -124,7 +119,6 @@ def register_get_api_routes(app):
         return jsonify(log_list)
 
     @app.route('/api/get/user/requests', methods=['GET'])
-    @api_access_control
     @login_required
     def api_get_user_requests():
         """Get requests for the current user"""
@@ -155,7 +149,6 @@ def register_get_api_routes(app):
         return jsonify(request_list)
 
     @app.route('/api/get/admin/logs', methods=['GET'])
-    @api_access_control
     @admin_required
     def api_get_admin_logs():
         try:
@@ -180,7 +173,6 @@ def register_get_api_routes(app):
         return jsonify(log_list)
 
     @app.route('/api/get/currencyPool', methods=['GET'])
-    @api_access_control
     def api_get_currency_pool():
         settings = get_settings()
         total_used = get_total_currency()
@@ -193,7 +185,6 @@ def register_get_api_routes(app):
         })
 
     @app.route('/api/get/walletList', methods=['GET'])
-    @api_access_control
     @admin_required
     def api_get_wallet_list():
         # Get users
@@ -215,7 +206,6 @@ def register_get_api_routes(app):
         return jsonify(wallet_list)
 
     @app.route('/api/get/requests', methods=['GET'])
-    @api_access_control
     @admin_required
     def api_get_all_requests():
         """Get all pending requests for admin"""
