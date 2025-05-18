@@ -18,6 +18,7 @@
                         </div>
                     {% endif %}
                     <form method="post" action="/login">
+                        {{ loginForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="wallet_name" class="form-label">Wallet Name</label>
                             <input type="text" class="form-control" id="wallet_name" name="wallet_name" required>
@@ -52,23 +53,21 @@
                     </div>
                     <div class="modal-body">
                         <form id="requestWalletForm">
+                            {{ requestWalletForm.hidden_tag() }}
                             <div class="mb-3">
                                 <label for="requestWalletName" class="form-label">Desired Wallet Name</label>
-                                <input type="text" class="form-control" id="requestWalletName" required
+                                <input type="text" class="form-control" id="requestWalletName" name="requested_wallet_name" required
                                        pattern="[a-zA-Z0-9_]{3,100}">
-                                <div class="form-text">Wallet name must be 3-100 characters and contain only letters,
-                                    numbers, and underscores.
-                                </div>
+                                <div class="form-text">Wallet name must be 3-100 characters and contain only letters, numbers, and underscores.</div>
                             </div>
                             <div class="mb-3">
                                 <label for="requestPassword" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="requestPassword" required minlength="8">
+                                <input type="password" class="form-control" id="requestPassword" name="request_password" required minlength="8">
                                 <div class="form-text">Password must be at least 8 characters long.</div>
                             </div>
                             <div class="mb-3">
                                 <label for="requestReason" class="form-label">Reason for Request</label>
-                                <textarea class="form-control" id="requestReason" rows="3" required minlength="3"
-                                          maxlength="500"></textarea>
+                                <textarea class="form-control" id="requestReason" name="request_reason" rows="3" required minlength="3" maxlength="500"></textarea>
                                 <div class="form-text">Please provide a brief reason for your wallet request.</div>
                             </div>
                         </form>

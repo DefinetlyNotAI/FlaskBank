@@ -31,6 +31,7 @@
                 </div>
                 <div class="card-body">
                     <form id="mintForm">
+                        {{ mintForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="mintAmount" class="form-label">Amount to Mint</label>
                             <input type="number" class="form-control" id="mintAmount" min="1" step="1" required>
@@ -48,6 +49,7 @@
                 </div>
                 <div class="card-body">
                     <form id="burnForm">
+                        {{ burnForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="burnAmount" class="form-label">Amount to Burn</label>
                             <input type="number" class="form-control" id="burnAmount" min="1" max="{{ available }}"

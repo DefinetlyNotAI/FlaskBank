@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('#csrfForm input[name="csrf_token"]').value;
+
 document.addEventListener('DOMContentLoaded', function () {
     // Approve Request Buttons
     document.querySelectorAll('.approve-btn').forEach(button => {
@@ -37,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({
                             request_ticket_uuid: requestUuid
@@ -104,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({
                             request_ticket_uuid: requestUuid

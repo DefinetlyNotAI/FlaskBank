@@ -13,6 +13,7 @@
                 </div>
                 <div class="card-body">
                     <form id="sqlQueryForm">
+                        {{ sqlQueryForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="sqlQuery" class="form-label">Enter SQL Query</label>
                             <textarea class="form-control" id="sqlQuery" rows="4"

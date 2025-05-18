@@ -56,11 +56,14 @@ function loadRequests() {
         });
 }
 
+const csrfToken = document.querySelector('#csrfForm input[name="csrf_token"]').value;
+
 function approveRequest(requestUuid) {
     fetch('/api/admin/approveRequest', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             request_ticket_uuid: requestUuid
@@ -85,6 +88,7 @@ function rejectRequest(requestUuid) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             request_ticket_uuid: requestUuid

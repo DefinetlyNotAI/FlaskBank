@@ -5,18 +5,28 @@ from datetime import datetime, UTC, timedelta
 import requests as req
 from flask import Flask, render_template, redirect, url_for, send_from_directory, request, session
 from flask_talisman import Talisman
-from waitress import serve
 from werkzeug.security import check_password_hash
+from flask_wtf import CSRFProtect
 
 from api import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
     register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
 from api.admin import sync_admin_wallet
+from bank_lib import SetupForm
 from bank_lib.database import init_db, is_db_initialized, execute_query, execute_query_dict
 from bank_lib.decorator import api_access_control, admin_required, login_required
+
+from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransferForm, RefundForm, SqlQueryForm
+from bank_lib.form_CSRF_validators import LoginForm, RequestWalletForm, FreezeForm, ResetForm, BurnForm, \
+    MintCurrencyForm, BurnCurrencyForm, CreateWalletForm, RulesForm, RequestForm, AdminLogForm, AdminRequestsForm
+
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name
 from bank_lib.global_vars import DB_POOL, ALLOW_PUBLIC_API_ACCESS
 from bank_lib.log_module import create_log, rotate_logs
 from bank_lib.validate import validate_wallet_name
+
+from flask_wtf.csrf import CSRFError
+from flask import jsonify
+
 
 # Configuration
 app = Flask(__name__, static_folder='static')
@@ -44,6 +54,8 @@ Talisman(
     }
 )
 
+csrf = CSRFProtect(app)
+
 # Register API routes
 register_unused_api_routes(app)
 register_request_api_routes(app)
@@ -51,6 +63,12 @@ register_get_api_routes(app)
 register_setup_api_routes(app)
 register_transfer_api_routes(app)
 register_admin_api_routes(app)
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    # You can return a JSON error or render a template as you prefer
+    return jsonify({"error": "CSRF validation failed", "details": str(e.description)}), 400
 
 
 # Routes
@@ -78,6 +96,7 @@ def setup_page():
         return redirect(url_for('home'))
 
     settings = get_settings()
+    setupForm = SetupForm()
 
     if request.method == 'POST':
         # Collect form data
@@ -100,14 +119,14 @@ def setup_page():
             return render_template('setup.html', error=error_message, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
                                    settings=settings,
                                    is_admin='admin' in session and session['admin'],
-                                   is_logged_in='wallet_name' in session)
+                                   is_logged_in='wallet_name' in session, setupForm=setupForm)
 
         # Redirect to home if setup is successful
         return redirect(url_for('home'))
 
     return render_template('setup.html', allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session)
+                           is_logged_in='wallet_name' in session, setupForm=setupForm)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -116,6 +135,9 @@ def login():
         return redirect(url_for('setup_page'))
 
     settings = get_settings()
+    session.permanent = True
+    requestWalletForm = RequestWalletForm()
+    loginForm = LoginForm()
 
     if request.method == 'POST':
         wallet_name = request.form.get('wallet_name')
@@ -126,7 +148,8 @@ def login():
             return render_template('login.html', error="Invalid wallet name format",
                                    allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
                                    is_admin='admin' in session and session['admin'],
-                                   is_logged_in='wallet_name' in session)
+                                   is_logged_in='wallet_name' in session, loginForm=loginForm,
+                                   requestWalletForm=requestWalletForm)
 
         user = get_user_by_wallet_name(wallet_name)
 
@@ -148,11 +171,13 @@ def login():
 
         return render_template('login.html', error="Invalid credentials", allow_api_access=ALLOW_PUBLIC_API_ACCESS,
                                is_admin='admin' in session and session['admin'],
-                               is_logged_in='wallet_name' in session)
+                               is_logged_in='wallet_name' in session, loginForm=loginForm,
+                               requestWalletForm=requestWalletForm)
 
     return render_template('login.html', allow_api_access=ALLOW_PUBLIC_API_ACCESS, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session)
+                           is_logged_in='wallet_name' in session, loginForm=loginForm,
+                           requestWalletForm=requestWalletForm)
 
 
 @app.route('/logout')
@@ -178,9 +203,18 @@ def wallet_page(wallet_name):
     settings = get_settings()
     total_used = get_total_currency()
 
+    freezeForm = FreezeForm()
+    burnForm = BurnForm()
+    resetForm = ResetForm()
+    transferForm = TransferForm()
+    resetPasswordForm = ResetPasswordForm()
+    bankTransferForm = BankTransferForm()
+
     return render_template('wallet.html', user=user, settings=settings, total_used=total_used,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           resetForm=resetForm, burnForm=burnForm, freezeForm=freezeForm, transferForm=transferForm,
+                           resetPasswordForm=resetPasswordForm, bankTransferForm=bankTransferForm)
 
 
 @app.route('/leaderboard')
@@ -225,10 +259,12 @@ def user_logs_page():
     )
 
     settings = get_settings()
+    refundForm = RefundForm()
 
     return render_template('user_logs.html', logs=logs, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           refundForm=refundForm)
 
 
 @app.route('/user/requests')
@@ -254,10 +290,11 @@ def admin_logs_page():
         "SELECT action, details, timestamp FROM logs WHERE private_level = 'Admin' ORDER BY timestamp DESC LIMIT 50"
     )
     settings = get_settings()
+    adminLogForm = AdminLogForm()
 
     return render_template('admin_logs.html', logs=logs, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, adminLogForm=adminLogForm)
 
 
 @app.route('/admin/treasury')
@@ -268,11 +305,14 @@ def admin_treasury_page():
     settings = get_settings()
     total_used = get_total_currency()
 
+    burnForm = BurnCurrencyForm()
+    mintForm = MintCurrencyForm()
+
     return render_template('treasury.html', settings=settings,
                            total_used=total_used,
                            available=settings['maximum_currency'] - total_used,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, burnForm=burnForm, mintForm=mintForm)
 
 
 @app.route('/admin/wallets')
@@ -284,10 +324,11 @@ def admin_wallets_page():
         "SELECT wallet_name, current_currency, is_frozen, created_at, last_login FROM users WHERE wallet_name != 'admin'"
     )
     settings = get_settings()
+    createWalletForm = CreateWalletForm()
 
     return render_template('admin_wallets.html', users=users, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, createWalletForm=createWalletForm)
 
 
 @app.route('/admin/wallet/<wallet_name>')
@@ -306,20 +347,27 @@ def admin_wallet_detail_page(wallet_name):
         (wallet_name,)
     )
     settings = get_settings()
+    freezeForm = FreezeForm()
+    burnForm = BurnForm()
+    resetForm = ResetForm()
+    bankTransferForm = BankTransferForm()
 
     return render_template('admin_wallet_detail.html', user=user, requests=requests,
                            settings=settings, is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS,
+                           bankTransferForm=bankTransferForm, freezeForm=freezeForm, resetForm=resetForm,
+                           burnForm=burnForm)
 
 
 @app.route('/admin/rules')
 @admin_required
 def admin_rules_page():
     settings = get_settings()
+    rulesForm = RulesForm()
 
     return render_template('admin_rules.html', settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, rulesForm=rulesForm)
 
 
 @app.route('/admin/requests')
@@ -330,10 +378,11 @@ def admin_requests_page():
         "SELECT * FROM requests WHERE status = 'Pending' ORDER BY timestamp DESC"
     )
     settings = get_settings()
+    adminRequestsForm = AdminRequestsForm()
 
     return render_template('admin_requests.html', requests=requests, settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, adminRequestsForm=adminRequestsForm)
 
 
 @app.route('/admin/sql')
@@ -343,10 +392,11 @@ def admin_sql_page():
     sync_admin_wallet()
 
     settings = get_settings()
+    sqlQueryForm = SqlQueryForm()
 
     return render_template('admin_sql.html', settings=settings,
                            is_admin='admin' in session and session['admin'], is_logged_in='wallet_name' in session,
-                           allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           allow_api_access=ALLOW_PUBLIC_API_ACCESS, sqlQueryForm=sqlQueryForm)
 
 
 @app.route('/server-health')
@@ -369,6 +419,7 @@ def server_health_page():
 def requests_page():
     settings = get_settings()
     wallet_name = session['wallet_name']
+    requestForm = RequestForm()
 
     # Get user's pending requests
     requests = execute_query_dict(
@@ -378,7 +429,7 @@ def requests_page():
 
     return render_template('requests.html', requests=requests, settings=settings,
                            is_admin='admin' in session and session['admin'],
-                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS)
+                           is_logged_in='wallet_name' in session, allow_api_access=ALLOW_PUBLIC_API_ACCESS, requestForm=requestForm)
 
 
 @app.route('/api')

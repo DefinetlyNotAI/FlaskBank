@@ -1,9 +1,11 @@
-from wtforms import Form, StringField, PasswordField, FloatField, SelectField, TextAreaField
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, FloatField, SelectField, TextAreaField
 from wtforms.validators import Length, DataRequired, Regexp, NumberRange, Optional
 
 
 # Form Validation Classes
-class SetupForm(Form):
+# also used as a CSRF validator
+class SetupForm(FlaskForm):
     bank_name = StringField('Bank Name', [
         Length(min=3, max=100, message="Bank name must be between 3 and 100 characters"),
         DataRequired(message="Bank name is required")
@@ -18,7 +20,7 @@ class SetupForm(Form):
     ])
 
 
-class WalletForm(Form):
+class WalletForm(FlaskForm):
     username = StringField('Username', [
         Length(min=3, max=100, message="Username must be between 3 and 100 characters"),
         DataRequired(message="Username is required"),
@@ -42,7 +44,7 @@ class WalletForm(Form):
         super().process(formdata, obj, data, **kwargs)
 
 
-class TransferForm(Form):
+class TransferForm(FlaskForm):
     to_wallet = StringField('To Wallet', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
@@ -62,7 +64,7 @@ class TransferForm(Form):
     ])
 
 
-class ResetPasswordForm(Form):
+class ResetPasswordForm(FlaskForm):
     new_password = PasswordField('New Password', [
         Length(min=8, message="Password must be at least 8 characters long"),
         DataRequired(message="New password is required")
@@ -73,7 +75,7 @@ class ResetPasswordForm(Form):
     ])
 
 
-class RefundForm(Form):
+class RefundForm(FlaskForm):
     transfer_ticket_uuid = StringField('Transfer Ticket UUID', [
         Length(min=36, max=36, message="Invalid UUID length"),
         DataRequired(message="UUID is required"),
@@ -85,7 +87,7 @@ class RefundForm(Form):
     ])
 
 
-class AdminActionForm(Form):
+class AdminActionForm(FlaskForm):
     wallet_name = StringField('Wallet Name', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
@@ -97,7 +99,7 @@ class AdminActionForm(Form):
     ])
 
 
-class CurrencyForm(Form):
+class CurrencyForm(FlaskForm):
     amount = FloatField('Amount', [
         NumberRange(min=0.01, message="Amount must be greater than 0"),
         DataRequired(message="Amount is required")
@@ -112,7 +114,7 @@ class CurrencyForm(Form):
         super().process(formdata, obj, data, **kwargs)
 
 
-class BankTransferForm(Form):
+class BankTransferForm(FlaskForm):
     wallet_name = StringField('Wallet Name', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
@@ -134,7 +136,8 @@ class BankTransferForm(Form):
     ])
 
 
-class SqlQueryForm(Form):
+# also used as CSRF validator
+class SqlQueryForm(FlaskForm):
     query = TextAreaField('SQL Query', [
         DataRequired(message="Query is required")
     ])

@@ -5,6 +5,7 @@ document.getElementById('rulesForm').addEventListener('submit', function (e) {
     const allowPublicLogs = document.getElementById('allowPublicLogs').checked;
     const allowDebts = document.getElementById('allowDebts').checked;
     const allowSelfReview = document.getElementById('allowSelfReview').checked;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     // Show loading state
     Swal.fire({
@@ -18,6 +19,9 @@ document.getElementById('rulesForm').addEventListener('submit', function (e) {
 
     fetchData('/api/setup/rules', {
         method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
         body: JSON.stringify({
             allow_leaderboard: allowLeaderboard,
             allow_public_logs: allowPublicLogs,

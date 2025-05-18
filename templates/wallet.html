@@ -38,6 +38,7 @@
                     </div>
                     <div class="card-body">
                         <form id="transferForm">
+                            {{ transferForm.hidden_tag() }}
                             <div class="mb-3">
                                 <label for="toWallet" class="form-label">Recipient Wallet</label>
                                 <input type="text" class="form-control" id="toWallet" required
@@ -84,6 +85,7 @@
                     </div>
                     <div class="card-body">
                         <form id="resetPasswordForm">
+                            {{ resetPasswordForm.hidden_tag() }}
                             <div class="mb-3">
                                 <label for="newPassword" class="form-label">New Password</label>
                                 <input type="password" class="form-control" id="newPassword" required minlength="8">
@@ -138,6 +140,7 @@
                     </div>
                     <div class="card-body">
                         <form id="bankTransferForm">
+                            {{ bankTransferForm.hidden_tag() }}
                             <div class="mb-3">
                                 <label for="bankAmount" class="form-label">Amount (use negative for withdrawal)</label>
                                 <input type="number" class="form-control" id="bankAmount" step="0.01" required>
@@ -184,18 +187,21 @@
         <!-- Admin Action Forms -->
         <div class="d-none">
             <form id="freezeForm">
+                {{ freezeForm.hidden_tag() }}
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
                 <label for="freezeReason"></label><textarea id="freezeReason" name="reason" required minlength="3"
                                                             maxlength="500"></textarea>
             </form>
 
             <form id="resetForm">
+                {{ resetForm.hidden_tag() }}
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
                 <label for="resetWalletReason"></label><textarea id="resetWalletReason" name="reason" required
                                                                  minlength="3" maxlength="500"></textarea>
             </form>
 
             <form id="burnForm">
+                {{ burnForm.hidden_tag() }}
                 <input type="hidden" name="wallet_name" value="{{ user.wallet_name }}">
                 <label for="burnReason"></label><textarea id="burnReason" name="reason" required minlength="3"
                                                           maxlength="500"></textarea>

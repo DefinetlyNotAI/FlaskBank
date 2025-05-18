@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 
 from bank_lib.database import execute_query, execute_query_dict
 from bank_lib.decorator import api_access_control, login_required
-from bank_lib.form_types import ResetPasswordForm
+from bank_lib.form_validators import ResetPasswordForm
 from bank_lib.get_data import get_settings, get_client_ip, get_user_by_wallet_name
 from bank_lib.log_module import create_log
 from bank_lib.validate import validate_wallet_name

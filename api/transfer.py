@@ -4,7 +4,7 @@ from flask import jsonify, request, session
 
 from bank_lib.database import execute_query
 from bank_lib.decorator import api_access_control, admin_required, login_required
-from bank_lib.form_types import TransferForm, BankTransferForm
+from bank_lib.form_validators import TransferForm, BankTransferForm
 from bank_lib.get_data import get_settings, get_client_ip, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
 from bank_lib.log_module import create_log

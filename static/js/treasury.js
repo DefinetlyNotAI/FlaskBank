@@ -37,6 +37,7 @@ document.getElementById('mintForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     const amount = document.getElementById('mintAmount').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     // Show confirmation dialog
     Swal.fire({
@@ -62,6 +63,7 @@ document.getElementById('mintForm').addEventListener('submit', function (e) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     amount: amount
@@ -105,6 +107,7 @@ document.getElementById('burnForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     const amount = document.getElementById('burnAmount').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     // Show confirmation dialog
     Swal.fire({
@@ -131,6 +134,7 @@ document.getElementById('burnForm').addEventListener('submit', function (e) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify({
                     amount: amount

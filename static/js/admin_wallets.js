@@ -44,6 +44,7 @@ document.getElementById('createWalletForm').addEventListener('submit', function 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const initialCurrency = document.getElementById('initialCurrency').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     // Show loading state
     Swal.fire({
@@ -57,6 +58,9 @@ document.getElementById('createWalletForm').addEventListener('submit', function 
 
     fetchData('/api/setup/wallet', {
         method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
         body: JSON.stringify({
             username: username,
             password: password,

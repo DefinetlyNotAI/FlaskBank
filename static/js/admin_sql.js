@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Update the executeQuery function to add data attributes for admin protection
     function executeQuery() {
         const query = sqlQuery.value.trim();
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
         if (!query) {
             Swal.fire({
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({
                 query: query

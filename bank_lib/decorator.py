@@ -2,6 +2,7 @@ from functools import wraps
 from urllib.parse import urlparse
 
 from flask import request, jsonify, session
+from flask_wtf.csrf import validate_csrf
 
 from .global_vars import ALLOW_PUBLIC_API_ACCESS
 
@@ -22,24 +23,36 @@ def admin_required(f):
 def api_access_control(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Always allow access if public mode is on
         if ALLOW_PUBLIC_API_ACCESS:
+            # If it's a safe method (GET, HEAD, OPTIONS), allow
+            if request.method in ('GET', 'HEAD', 'OPTIONS'):
+                return f(*args, **kwargs)
+            # If unsafe (POST, PUT, DELETE), validate CSRF token
+            try:
+                csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
+                validate_csrf(csrf_token)
+            except Exception:
+                return jsonify({"error": "CSRF token missing or invalid"}), 403
             return f(*args, **kwargs)
 
-        # Check if the request is coming from our own site (CSRF protection)
+        # Public mode is off — fallback to restricted access
         referer = request.headers.get('Referer', '')
-        is_same_origin = referer and urlparse(referer).netloc == urlparse(request.host_url).netloc
+        origin_matches = referer and urlparse(referer).netloc == urlparse(request.host_url).netloc
+        is_admin = session.get('admin', False)
 
-        # Allow access if:
-        # 1. User is an admin
-        # 2. Request is from the same origin (our website)
-        # 3. It's a GET request for public endpoints
-        if ('admin' in session and session['admin']) or \
-                is_same_origin or \
-                (request.method == 'GET' and request.path in ['/api/get/logs', '/api/get/leaderboard',
-                                                              '/api/get/currencyPool']):
+        # Allow if admin or from same origin (e.g. browser request from frontend)
+        if is_admin or origin_matches:
+            if request.method in ('POST', 'PUT', 'DELETE'):
+                try:
+                    csrf_token = request.headers.get("X-CSRFToken") or request.form.get("csrf_token")
+                    validate_csrf(csrf_token)
+                except Exception:
+                    return jsonify({"error": "CSRF token missing or invalid"}), 403
             return f(*args, **kwargs)
-        else:
-            return jsonify({"error": "API access denied. Please use the web interface."}), 403
+
+        # Deny all others
+        return jsonify({"error": "API access denied. Please use the web interface."}), 403
 
     return decorated_function
 

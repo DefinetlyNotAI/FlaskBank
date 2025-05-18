@@ -40,6 +40,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="refundForm">
+                        {{ refundForm.hidden_tag() }}
                         <input type="hidden" id="transferUuid" value="">
                         <div class="mb-3">
                             <label for="refundReason" class="form-label">Reason for Refund</label>

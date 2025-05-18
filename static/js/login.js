@@ -2,6 +2,7 @@ document.getElementById('submitWalletRequest').addEventListener('click', functio
     const walletName = document.getElementById('requestWalletName').value.trim();
     const password = document.getElementById('requestPassword').value.trim();
     const reason = document.getElementById('requestReason').value.trim();
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     const forbiddenChars = /[|'"`;]/;
 
@@ -61,6 +62,7 @@ document.getElementById('submitWalletRequest').addEventListener('click', functio
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             wallet_name: walletName,

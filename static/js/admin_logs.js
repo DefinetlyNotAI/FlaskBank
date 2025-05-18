@@ -33,6 +33,8 @@ document.getElementById('purgeLogsBtn').addEventListener('click', function () {
     purgeModal.show();
 });
 
+const csrfToken = document.querySelector('#csrfForm input[name="csrf_token"]').value;
+
 // Update the purge logs button to ensure page refresh
 document.getElementById('confirmPurgeBtn').addEventListener('click', function () {
     // Show loading state
@@ -49,6 +51,7 @@ document.getElementById('confirmPurgeBtn').addEventListener('click', function ()
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
         },
         body: JSON.stringify({}),
     })

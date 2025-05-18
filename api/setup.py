@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 
 from bank_lib.database import is_db_initialized, execute_query
 from bank_lib.decorator import api_access_control, admin_required
-from bank_lib.form_types import SetupForm, WalletForm
+from bank_lib.form_validators import SetupForm, WalletForm
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name, \
     update_admin_balance
 from bank_lib.log_module import create_log

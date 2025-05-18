@@ -120,6 +120,7 @@ if (transferForm) {
             return;
         }
 
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
         const toWallet = document.getElementById('toWallet').value;
         const amount = document.getElementById('amount').value;
         const category = document.getElementById('category').value;
@@ -138,6 +139,10 @@ if (transferForm) {
         try {
             const data = await fetchData('/api/transfer/toWallet', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
+                },
                 body: JSON.stringify({
                     to_wallet: toWallet,
                     amount: amount,
@@ -181,6 +186,7 @@ if (resetPasswordForm) {
 
         const newPassword = document.getElementById('newPassword').value;
         const reason = document.getElementById('resetReason').value;
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
         // Show loading state
         Swal.fire({
@@ -195,6 +201,10 @@ if (resetPasswordForm) {
         try {
             const data = await fetchData('/api/request/resetPassword', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
+                },
                 body: JSON.stringify({
                     new_password: newPassword,
                     reason: reason
@@ -317,11 +327,13 @@ if (freezeWalletBtn) {
             if (result.isConfirmed) {
                 const reason = result.value;
                 const endpoint = document.getElementById('walletData').dataset.isFrozen === 'True' ? '/api/admin/unfreezeWallet' : '/api/admin/freezeWallet';
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
                     },
                     body: JSON.stringify({
                         wallet_name: document.getElementById('walletData').dataset.walletName,
@@ -386,11 +398,12 @@ if (resetWalletBtn) {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const reason = result.value;
-
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
                         fetch('/api/admin/resetWallet', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
                             },
                             body: JSON.stringify({
                                 wallet_name: document.getElementById('walletData').dataset.walletName,
@@ -457,11 +470,12 @@ if (burnWalletBtn) {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const reason = result.value;
-
+                        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
                         fetch('/api/admin/burnWallet', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
                             },
                             body: JSON.stringify({
                                 wallet_name: document.getElementById('walletData').dataset.walletName,

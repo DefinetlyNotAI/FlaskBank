@@ -85,6 +85,7 @@
                 </div>
                 <div class="card-body">
                     <form id="bankTransferForm">
+                        {{ bankTransferForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="bankAmount" class="form-label">Amount (use negative for withdrawal)</label>
                             <input type="number" class="form-control" id="bankAmount" step="0.01" required>
@@ -121,6 +122,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="freezeForm">
+                        {{ freezeForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="freezeReason" class="form-label">Reason</label>
                             <textarea class="form-control" id="freezeReason" rows="3" required></textarea>
@@ -150,6 +152,7 @@
                     <p class="text-danger">Warning: This will set the wallet balance to 0 and delete all related
                         logs.</p>
                     <form id="resetForm">
+                        {{ resetForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="resetWalletReason" class="form-label">Reason</label>
                             <textarea class="form-control" id="resetWalletReason" rows="3" required></textarea>
@@ -175,6 +178,7 @@
                 <div class="modal-body">
                     <p class="text-danger">Warning: This will permanently delete the wallet and all associated data.</p>
                     <form id="burnForm">
+                        {{ burnForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="burnReason" class="form-label">Reason</label>
                             <textarea class="form-control" id="burnReason" rows="3" required></textarea>

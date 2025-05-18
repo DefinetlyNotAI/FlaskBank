@@ -13,6 +13,7 @@
                 </div>
                 <div class="card-body">
                     <form id="createWalletForm" class="row g-3">
+                        {{ createWalletForm.hidden_tag() }}
                         <div class="col-md-4">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="username" required>

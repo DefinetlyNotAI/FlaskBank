@@ -14,6 +14,7 @@
                 <div class="card-body">
                     <!-- Add novalidate and id to the form -->
                     <form id="setupForm" novalidate>
+                        {{ setupForm.hidden_tag() }}
                         <div class="mb-3">
                             <label for="bankName" class="form-label">Bank Name</label>
                             <input type="text" class="form-control" id="bankName" required>

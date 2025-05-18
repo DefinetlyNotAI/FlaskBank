@@ -74,6 +74,7 @@ function loadUserLogs() {
 document.getElementById('submitRefund').addEventListener('click', function () {
     const logId = document.getElementById('transferUuid').value;
     const reason = document.getElementById('refundReason').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     if (!reason) {
         Swal.fire({
@@ -99,6 +100,7 @@ document.getElementById('submitRefund').addEventListener('click', function () {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             log_id: logId,

@@ -91,6 +91,7 @@ document.getElementById('bankTransferForm').addEventListener('submit', function 
     const amount = document.getElementById('bankAmount').value;
     const category = document.getElementById('bankCategory').value;
     const reason = document.getElementById('bankReason').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     Swal.fire({
         title: 'Processing transfer...',
@@ -103,6 +104,9 @@ document.getElementById('bankTransferForm').addEventListener('submit', function 
 
     fetchData('/api/transfer/bank', {
         method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
         body: JSON.stringify({
             wallet_name: '{{ user.wallet_name }}',
             amount: amount,
@@ -147,6 +151,7 @@ document.getElementById('freezeButton').addEventListener('click', function () {
 
     const endpoint = '{{ user.is_frozen }}' === 'True' ? '/api/admin/unfreezeWallet' : '/api/admin/freezeWallet';
     const action = '{{ user.is_frozen }}' === 'True' ? 'unfreezing' : 'freezing';
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
     // Show loading state
     Swal.fire({
@@ -162,6 +167,7 @@ document.getElementById('freezeButton').addEventListener('click', function () {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             wallet_name: '{{ user.wallet_name }}',
@@ -194,6 +200,8 @@ document.getElementById('freezeButton').addEventListener('click', function () {
 // Admin Reset Button
 document.getElementById('resetButton').addEventListener('click', function () {
     const reason = document.getElementById('resetWalletReason').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
     if (!reason) {
         Swal.fire({
             title: 'Error!',
@@ -217,6 +225,7 @@ document.getElementById('resetButton').addEventListener('click', function () {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             wallet_name: '{{ user.wallet_name }}',
@@ -249,6 +258,8 @@ document.getElementById('resetButton').addEventListener('click', function () {
 // Admin Burn Button
 document.getElementById('burnButton').addEventListener('click', function () {
     const reason = document.getElementById('burnReason').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
     if (!reason) {
         Swal.fire({
             title: 'Error!',
@@ -272,6 +283,7 @@ document.getElementById('burnButton').addEventListener('click', function () {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             wallet_name: '{{ user.wallet_name }}',

@@ -54,6 +54,9 @@
             {% endif %}
         </div>
     </div>
+    <div id="csrfForm" style="display:none;">
+        {{ adminRequestsForm.hidden_tag() }}
+    </div>
 {% endblock %}
 
 {% block scripts %}

@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const bankName = document.getElementById('bankName').value;
         const currencyName = document.getElementById('currencyName').value;
         const adminPassword = document.getElementById('adminPassword').value;
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
         // Validate form inputs
         if (!bankName || !currencyName || !adminPassword) {
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({
                 bank_name: bankName,
