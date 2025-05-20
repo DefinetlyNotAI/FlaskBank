@@ -1,6 +1,6 @@
 from flask import jsonify, request, session
 
-from bank_lib.database import execute_query_dict
+from bank_lib.database import execute_query_dict, check_db_connection
 from bank_lib.decorator import admin_required, login_required
 from bank_lib.get_data import get_settings, get_total_currency, get_server_health, get_user_by_wallet_name
 from bank_lib.validate import validate_wallet_name
@@ -233,3 +233,12 @@ def register_get_api_routes(app):
         } for req in requests]
 
         return jsonify(request_list)
+
+    @app.route('/api/check-database', methods=['GET'])
+    def api_check_database():
+        """API endpoint to check database connection"""
+        if check_db_connection():
+            return jsonify({"status": "success", "message": "Database connection successful"})
+        else:
+            return jsonify({"status": "error",
+                            "message": "Database connection failed. Please check your database configuration."}), 500

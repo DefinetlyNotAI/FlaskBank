@@ -11,8 +11,9 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import BadRequest, HTTPException
 from werkzeug.security import check_password_hash
+from waitress import serve
 
-from api import register_unused_api_routes, register_request_api_routes, register_get_api_routes, \
+from api import register_request_api_routes, register_get_api_routes, \
     register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
 from api.admin import sync_admin_wallet
 from bank_lib import SetupForm
@@ -64,7 +65,6 @@ Talisman(
 csrf = CSRFProtect(app)
 
 # Register API routes
-register_unused_api_routes(app)
 register_request_api_routes(app)
 register_get_api_routes(app)
 register_setup_api_routes(app)
@@ -506,5 +506,4 @@ if __name__ == '__main__':
         logging.warning("Database pool is not initialized. Please check your database connection.")
     finally:
         logging.info("Server Started!")
-        app.run(debug=True)
-        # serve(app, host='0.0.0.0', port=5000)
+        serve(app, host='0.0.0.0', port=5000)

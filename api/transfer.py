@@ -126,6 +126,7 @@ def register_transfer_api_routes(app):
                 print(f"Error during transfer: {e}")
                 return jsonify({"error": f"Transfer failed: {str(e)}"}), 500
 
+    # noinspection DuplicatedCode
     @app.route('/api/transfer/bank', methods=['POST'])
     @admin_required
     def api_transfer_bank():

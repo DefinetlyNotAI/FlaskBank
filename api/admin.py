@@ -30,6 +30,7 @@ def sync_admin_wallet():
 
 
 def register_admin_api_routes(app):
+    # noinspection DuplicatedCode
     @app.route('/api/admin/burnWallet', methods=['POST'])
     @admin_required
     def api_admin_burn_wallet():
@@ -82,6 +83,7 @@ def register_admin_api_routes(app):
         finally:
             sync_admin_wallet()
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/freezeWallet', methods=['POST'])
     @admin_required
     def api_admin_freeze_wallet():
@@ -129,6 +131,7 @@ def register_admin_api_routes(app):
             print(f"Error freezing wallet: {e}")
             return jsonify({"error": f"Failed to freeze wallet: {str(e)}"}), 500
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/unfreezeWallet', methods=['POST'])
     @admin_required
     def api_admin_unfreeze_wallet():
@@ -173,6 +176,7 @@ def register_admin_api_routes(app):
             print(f"Error unfreezing wallet: {e}")
             return jsonify({"error": f"Failed to unfreeze wallet: {str(e)}"}), 500
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/resetWallet', methods=['POST'])
     @admin_required
     def api_admin_reset_wallet():
@@ -232,6 +236,7 @@ def register_admin_api_routes(app):
         finally:
             sync_admin_wallet()
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/approveRequest', methods=['POST'])
     @admin_required
     def api_admin_approve_request():
@@ -443,6 +448,7 @@ def register_admin_api_routes(app):
         finally:
             sync_admin_wallet()
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/rejectRequest', methods=['POST'])
     @admin_required
     def api_admin_reject_request():
@@ -507,6 +513,7 @@ def register_admin_api_routes(app):
             print(f"Error purging logs: {e}")
             return jsonify({"error": f"Failed to purge logs: {str(e)}"}), 500
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/mintCurrency', methods=['POST'])
     @admin_required
     def api_admin_mint_currency():
@@ -553,6 +560,7 @@ def register_admin_api_routes(app):
         finally:
             sync_admin_wallet()
 
+    # noinspection DuplicatedCode
     @app.route('/api/admin/burnCurrency', methods=['POST'])
     @admin_required
     def api_admin_burn_currency():

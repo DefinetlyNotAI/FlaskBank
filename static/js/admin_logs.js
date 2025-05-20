@@ -1,8 +1,12 @@
+let cachedLogs = [];
+
 function loadAdminLogs() {
     fetch('/api/get/admin/logs')
         .then(response => response.json())
         .then(data => {
             const tableBody = document.getElementById('adminLogsBody');
+            cachedLogs = data;
+
             if (data.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No logs found</td></tr>';
                 return;
@@ -27,7 +31,7 @@ function loadAdminLogs() {
         });
 }
 
-// Purge logs button
+// Open purge confirmation modal
 document.getElementById('purgeLogsBtn').addEventListener('click', function () {
     const purgeModal = new bootstrap.Modal(document.getElementById('purgeLogsModal'));
     purgeModal.show();
@@ -35,7 +39,7 @@ document.getElementById('purgeLogsBtn').addEventListener('click', function () {
 
 const csrfToken = document.querySelector('#csrfForm input[name="csrf_token"]').value;
 
-// Update the purge logs button to ensure page refresh
+// Confirm purge action
 document.getElementById('confirmPurgeBtn').addEventListener('click', function () {
     // Show loading state
     Swal.fire({
@@ -81,7 +85,43 @@ document.getElementById('confirmPurgeBtn').addEventListener('click', function ()
         });
 });
 
-// Load admin logs on page load
+// Export logs as CSV
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    if (!cachedLogs.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No logs available to export',
+            text: 'Make sure logs have finished loading before exporting.'
+        });
+        return;
+    }
+
+    const rows = [['Timestamp', 'Action', 'Details']];
+    cachedLogs.forEach(log => {
+        rows.push([
+            new Date(log.timestamp).toLocaleString(),
+            log.action,
+            log.details
+        ]);
+    });
+
+    const csvContent = rows
+        .map(row => row.map(field => `"${field.replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `admin_logs_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+});
+
+// Load logs on initial page load
 window.addEventListener('load', function () {
     loadAdminLogs();
 });

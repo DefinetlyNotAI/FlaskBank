@@ -1,3 +1,5 @@
+let cachedUserLogs = [];
+
 // Update the refund button to use log ID instead of UUID
 // Update the loadUserLogs function to check for existing refund requests
 function loadUserLogs() {
@@ -21,6 +23,7 @@ function loadUserLogs() {
             return fetch('/api/get/wallet/logs')
                 .then(response => response.json())
                 .then(data => {
+                    cachedUserLogs = data; // ✅ Store for CSV export
                     const tableBody = document.getElementById('userLogsBody');
                     if (data.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No logs found</td></tr>';
@@ -138,6 +141,34 @@ document.getElementById('submitRefund').addEventListener('click', function () {
                 confirmButtonText: 'OK'
             });
         });
+});
+
+document.getElementById('exportUserCsvBtn').addEventListener('click', () => {
+    if (!cachedUserLogs.length) {
+        Swal.fire('No Logs', 'There are no logs to export.', 'info');
+        return;
+    }
+
+    const headers = ['Timestamp', 'Action', 'Details'];
+    const rows = cachedUserLogs.map(log => [
+        new Date(log.timestamp).toLocaleString(),
+        log.action,
+        log.details
+    ]);
+
+    const csv = [headers, ...rows]
+        .map(row => row.map(field => `"${(field || '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `my_logs_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 });
 
 // Load user logs on page load
