@@ -188,21 +188,6 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
     - Navigate to Admin > Database Explorer
     - Execute SQL queries or use predefined queries to check system status
 
-## API Documentation
-
-The system provides a comprehensive API for integration with other systems, most may be disabled by admin to be
-accessible other than the web interface:
-
-- **GET /api/logs**: Retrieve transaction logs
-- **GET /api/leaderboard**: Get top account holders
-- **POST /api/transfer**: Process a fund transfer
-- **POST /api/request_refund**: Submit a refund request
-- **GET /api/wallet/{username}**: Get wallet details (admin only)
-- **POST /api/mint**: Create new currency (admin only)
-- **POST /api/burn**: Remove currency from circulation (admin only)
-
-Full API documentation is available at `/api_docs` when the system is running.
-
 ## Security Considerations
 
 - The system implements API access control to prevent unauthorized access from external sources
