@@ -188,3 +188,44 @@ def register_request_api_routes(app):
         except Exception as e:
             print(f"Error resetting password: {e}")
             return jsonify({"error": f"Password reset failed: {str(e)}"}), 500
+
+    @app.route('/api/request/deleteAccount', methods=['POST'])
+    @login_required
+    def api_request_delete_account():
+        data = request.json
+        reason = data.get('reason')
+        FORBIDDEN_REASON_CHARS = re.compile(r"[|\'\"`;]")
+
+        if not reason or len(reason) < 3 or FORBIDDEN_REASON_CHARS.search(reason):
+            return jsonify({"error": "Reason must be at least 3 characters long and must not contain forbidden characters"}), 400
+
+        wallet_name = session['wallet_name']
+
+        if wallet_name == "admin":
+            return jsonify({"error": "You cannot delete admin accounts"}), 403
+
+        try:
+            delete_uuid = str(uuid.uuid4())
+
+            # Create deletion request
+            execute_query(
+                """
+                INSERT INTO requests
+                (request_type, ticket_uuid, wallet_name, category, status, reason, ip_address)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                ("AccountDeletion", delete_uuid, wallet_name, "Account", "Pending", reason, get_client_ip()),
+                commit=True
+            )
+
+            create_log("Account Deletion Request",
+                       f"{wallet_name} requested account deletion: {reason}",
+                       "Admin")
+
+            return jsonify({
+                "message": "Account deletion request submitted. An administrator will review your request.",
+                "request_ticket_uuid": delete_uuid
+            })
+        except Exception as e:
+            print(f"Error requesting account deletion: {e}")
+            return jsonify({"error": f"Account deletion request failed: {str(e)}"}), 500

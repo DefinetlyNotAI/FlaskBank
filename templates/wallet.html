@@ -107,6 +107,32 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Delete Account</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="delAccountForm">
+                            {{ delAccountForm.hidden_tag() }}
+                            <div class="mb-3">
+                                <label for="delReason" class="form-label">Reason</label>
+                                <textarea class="form-control" id="delReason" rows="2" required minlength="3"
+                                          maxlength="500"></textarea>
+                                <div class="invalid-feedback">
+                                    Reason must be 3-500 characters.
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit"
+                                        class="btn btn-warning{% if user.wallet_name == 'admin' %} disabled{% endif %}"
+                                        {% if user.wallet_name == 'admin' %}disabled aria-disabled="true"{% endif %}>
+                                    Request Account Deletion
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             {% endif %}
         </div>
 

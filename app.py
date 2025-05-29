@@ -21,7 +21,8 @@ from bank_lib.database import init_db, is_db_initialized, execute_query, execute
 from bank_lib.decorator import admin_required, login_required
 from bank_lib.form_CSRF_validators import LoginForm, RequestWalletForm, FreezeForm, ResetForm, BurnForm, \
     MintCurrencyForm, BurnCurrencyForm, CreateWalletForm, RulesForm, RequestForm, AdminLogForm, AdminRequestsForm
-from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransferForm, RefundForm, SqlQueryForm
+from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransferForm, RefundForm, SqlQueryForm, \
+    DelAccountForm
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name
 from bank_lib.global_vars import DB_POOL
 from bank_lib.log_module import create_log, rotate_logs
@@ -37,9 +38,15 @@ logging.basicConfig(
 )
 
 # Configuration
+secret_key = os.environ.get("SECRET_KEY", None)
+if secret_key is None:
+    secret_key = secrets.token_hex(32)
+    logging.warning("SECRET_KEY environment variable not set - Using random value")
+    logging.warning("Please note this means any reboot to the server invalidates ALL sessions, so it is recommended to set the global variable properly")
+
 app = Flask(__name__, static_folder='static')
 app.config.update(
-    SECRET_KEY=os.environ.get("SECRET_KEY") or secrets.token_hex(32),  # Do NOT hardcode
+    SECRET_KEY=secret_key,  # Do NOT hardcode
     SESSION_COOKIE_HTTPONLY=True,  # JS can't access cookies
     SESSION_COOKIE_SECURE=True,  # Only send cookies over HTTPS
     SESSION_COOKIE_SAMESITE='Strict',  # Prevent CSRF (see below)
@@ -246,12 +253,13 @@ def wallet_page(wallet_name):
     transferForm = TransferForm()
     resetPasswordForm = ResetPasswordForm()
     bankTransferForm = BankTransferForm()
+    delAccountForm = DelAccountForm()
 
     return render_template('wallet.html', user=user, settings=settings, total_used=total_used,
                            is_admin='admin' in session and session['admin'],
                            is_logged_in='wallet_name' in session,
                            resetForm=resetForm, burnForm=burnForm, freezeForm=freezeForm, transferForm=transferForm,
-                           resetPasswordForm=resetPasswordForm, bankTransferForm=bankTransferForm)
+                           resetPasswordForm=resetPasswordForm, bankTransferForm=bankTransferForm, delAccountForm=delAccountForm)
 
 
 @app.route('/leaderboard')
@@ -503,7 +511,7 @@ if __name__ == '__main__':
         rotate_logs()  # Perform log rotation during startup
     except Exception as err:
         logging.error(f"Error during startup: {err}")
-        logging.warning("Database pool is not initialized. Please check your database connection.")
+        logging.warning("Database pool is not initialized due to the error.")
     finally:
         logging.info("Server Started!")
         serve(app, host='0.0.0.0', port=5000)

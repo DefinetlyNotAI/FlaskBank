@@ -203,7 +203,7 @@ if (resetPasswordForm) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     new_password: newPassword,
@@ -235,6 +235,63 @@ if (resetPasswordForm) {
     });
 }
 
+// Reset Password Form
+// Update the reset password form to ensure page refresh
+const delAccountForm = document.getElementById('delAccountForm');
+if (delAccountForm) {
+    delAccountForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = this;
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const reason = document.getElementById('delReason').value;
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+        // Show loading state
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Processing your deletion request',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const data = await fetchData('/api/request/deleteAccount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    reason: reason
+                })
+            });
+
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload();
+            });
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+}
+
 // Admin Bank Transfer Form
 if (document.getElementById('bankTransferForm')) {
     document.getElementById('bankTransferForm').addEventListener('submit', async function (e) {
@@ -249,6 +306,7 @@ if (document.getElementById('bankTransferForm')) {
         const amount = document.getElementById('bankAmount').value;
         const category = document.getElementById('bankCategory').value;
         const reason = document.getElementById('bankReason').value;
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
         confirmAction(
             'Confirm Bank Transfer',
@@ -269,6 +327,10 @@ if (document.getElementById('bankTransferForm')) {
                 try {
                     const data = await fetchData('/api/transfer/bank', {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
                         body: JSON.stringify({
                             wallet_name: document.getElementById('walletData').dataset.walletName,
                             amount: amount,

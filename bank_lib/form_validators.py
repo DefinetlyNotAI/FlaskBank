@@ -75,6 +75,13 @@ class ResetPasswordForm(FlaskForm):
     ])
 
 
+class DelAccountForm(FlaskForm):
+    reason = TextAreaField('Reason', [
+        Length(min=3, max=500, message="Reason must be between 3 and 500 characters"),
+        DataRequired(message="Reason is required"),
+    ])
+
+
 class RefundForm(FlaskForm):
     transfer_ticket_uuid = StringField('Transfer Ticket UUID', [
         Length(min=36, max=36, message="Invalid UUID length"),
