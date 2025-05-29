@@ -180,7 +180,7 @@ This project is ready to deploy on [Vercel](https://vercel.com) with just a few 
     - Navigate to Admin > Wallets
     - Create, modify, or deactivate user accounts
 
-2. **System monitoring **(Globally accessible)
+2. **System monitoring** (Globally accessible)
     - Navigate to Admin > Server Health
     - View real-time metrics on system performance
 
