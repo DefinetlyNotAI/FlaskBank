@@ -107,69 +107,6 @@ async function loadRecentActivity() {
     }
 }
 
-// Transfer Form
-// Update the success callback for the transfer form to ensure page refresh
-const transferForm = document.getElementById('transferForm');
-if (transferForm) {
-    transferForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const form = this;
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            return;
-        }
-
-        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-        const toWallet = document.getElementById('toWallet').value;
-        const amount = document.getElementById('amount').value;
-        const category = document.getElementById('category').value;
-        const reason = document.getElementById('reason').value;
-
-        // Show loading state
-        Swal.fire({
-            title: 'Processing...',
-            text: 'Processing your transfer',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        try {
-            const data = await fetchData('/api/transfer/toWallet', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken  // Pass CSRF token here (note the header name)
-                },
-                body: JSON.stringify({
-                    to_wallet: toWallet,
-                    amount: amount,
-                    category: category,
-                    reason: reason
-                })
-            });
-
-            Swal.fire({
-                title: 'Success!',
-                text: data.message,
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                // Always refresh the page after a successful action
-                location.reload();
-            });
-        } catch (error) {
-            Swal.fire({
-                title: 'Error!',
-                text: error.message,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
-}
 
 // Reset Password Form
 // Update the reset password form to ensure page refresh

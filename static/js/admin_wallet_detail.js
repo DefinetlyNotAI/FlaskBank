@@ -1,4 +1,6 @@
 // Approve Request Buttons
+const walletName = document.getElementById('freezeButton').dataset.walletName;
+
 document.querySelectorAll('.approve-btn').forEach(button => {
     button.addEventListener('click', function () {
         const requestUuid = this.getAttribute('data-request-uuid');
@@ -108,7 +110,7 @@ document.getElementById('bankTransferForm').addEventListener('submit', function 
             'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
-            wallet_name: '{{ user.wallet_name }}',
+            wallet_name: walletName,
             amount: amount,
             category: category,
             reason: reason
@@ -149,11 +151,14 @@ document.getElementById('freezeButton').addEventListener('click', function () {
         return;
     }
 
-    const endpoint = '{{ user.is_frozen }}' === 'True' ? '/api/admin/unfreezeWallet' : '/api/admin/freezeWallet';
-    const action = '{{ user.is_frozen }}' === 'True' ? 'unfreezing' : 'freezing';
+    const freezeBtn = document.getElementById('freezeButton');
+    const walletName = freezeBtn.dataset.walletName;
+    const isFrozen = freezeBtn.dataset.isFrozen === 'true';
+
+    const endpoint = isFrozen ? '/api/admin/unfreezeWallet' : '/api/admin/freezeWallet';
+    const action = isFrozen ? 'unfreezing' : 'freezing';
     const csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
-    // Show loading state
     Swal.fire({
         title: `${action.charAt(0).toUpperCase() + action.slice(1)} wallet...`,
         text: 'Please wait',
@@ -170,7 +175,7 @@ document.getElementById('freezeButton').addEventListener('click', function () {
             'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
-            wallet_name: '{{ user.wallet_name }}',
+            wallet_name: walletName,
             reason: reason
         })
     })
@@ -228,7 +233,7 @@ document.getElementById('resetButton').addEventListener('click', function () {
             'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
-            wallet_name: '{{ user.wallet_name }}',
+            wallet_name: walletName,
             reason: reason
         })
     })
@@ -286,7 +291,7 @@ document.getElementById('burnButton').addEventListener('click', function () {
             'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
-            wallet_name: '{{ user.wallet_name }}',
+            wallet_name: walletName,
             reason: reason
         })
     })

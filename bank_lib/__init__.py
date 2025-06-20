@@ -6,4 +6,4 @@ from .get_data import get_settings, get_client_ip, get_total_currency, get_serve
     update_admin_balance
 from .global_vars import DB_POOL
 from .log_module import create_log, rotate_logs
-from .validate import validate_wallet_name, validate_uuid, validate_amount
+from .validate import validate_uuid, validate_amount

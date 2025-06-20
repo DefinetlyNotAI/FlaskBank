@@ -34,53 +34,6 @@
             {% if session.wallet_name == user.wallet_name %}
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">Transfer Funds</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="transferForm">
-                            {{ transferForm.hidden_tag() }}
-                            <div class="mb-3">
-                                <label for="toWallet" class="form-label">Recipient Wallet</label>
-                                <input type="text" class="form-control" id="toWallet" required
-                                       pattern="[a-zA-Z0-9_]{3,100}">
-                                <div class="invalid-feedback">
-                                    Wallet name must be 3-100 characters and contain only letters, numbers, and
-                                    underscores.
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="amount" step="0.01" required>
-                                <div class="invalid-feedback">
-                                    Amount must be a valid number.
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Category</label>
-                                <select class="form-select" id="category" required>
-                                    <option value="Reward">Reward</option>
-                                    <option value="Trade">Trade</option>
-                                    <option value="Invoice">Invoice</option>
-                                    <option value="Penalty">Penalty</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="reason" class="form-label">Reason</label>
-                                <textarea class="form-control" id="reason" rows="2" required minlength="3"
-                                          maxlength="500"></textarea>
-                                <div class="invalid-feedback">
-                                    Reason must be 3-500 characters.
-                                </div>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Transfer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="card mb-4">
-                    <div class="card-header">
                         <h5 class="mb-0">Reset Password</h5>
                     </div>
                     <div class="card-body">

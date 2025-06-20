@@ -1,12 +1,4 @@
-import re
 import uuid
-
-
-def validate_wallet_name(wallet_name):
-    """Validate wallet name format"""
-    if not wallet_name or not re.match(r'^[a-zA-Z0-9_]{3,100}$', wallet_name):
-        return False
-    return True
 
 
 def validate_amount(amount):

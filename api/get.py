@@ -3,7 +3,6 @@ from flask import jsonify, request, session
 from bank_lib.database import execute_query_dict, check_db_connection
 from bank_lib.decorator import admin_required, login_required
 from bank_lib.get_data import get_settings, get_total_currency, get_server_health, get_user_by_wallet_name
-from bank_lib.validate import validate_wallet_name
 
 
 def register_get_api_routes(app):
@@ -16,9 +15,6 @@ def register_get_api_routes(app):
     @app.route('/api/get/wallet', methods=['GET'])
     def api_get_wallet():
         wallet_name = request.args.get('wallet_name')
-
-        if not validate_wallet_name(wallet_name):
-            return jsonify({"error": "Invalid wallet name format"}), 400
 
         # Get user
         user = get_user_by_wallet_name(wallet_name)

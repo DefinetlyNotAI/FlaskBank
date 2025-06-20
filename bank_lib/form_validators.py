@@ -24,7 +24,6 @@ class WalletForm(FlaskForm):
     username = StringField('Username', [
         Length(min=3, max=100, message="Username must be between 3 and 100 characters"),
         DataRequired(message="Username is required"),
-        Regexp(r'^[a-zA-Z0-9_]+$', message="Wallet name can only contain letters, numbers, and underscores")
     ])
     password = PasswordField('Password', [
         Length(min=8, message="Password must be at least 8 characters long"),
@@ -48,7 +47,6 @@ class TransferForm(FlaskForm):
     to_wallet = StringField('To Wallet', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
-        Regexp(r'^[a-zA-Z0-9_]+$', message="Wallet name can only contain letters, numbers, and underscores")
     ])
     amount = FloatField('Amount', [DataRequired(message="Amount is required")])
     category = SelectField('Category', [DataRequired(
@@ -98,7 +96,6 @@ class AdminActionForm(FlaskForm):
     wallet_name = StringField('Wallet Name', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
-        Regexp(r'^[a-zA-Z0-9_]+$', message="Wallet name can only contain letters, numbers, and underscores")
     ])
     reason = TextAreaField('Reason', [
         Length(min=3, max=500, message="Reason must be between 3 and 500 characters"),
@@ -125,7 +122,6 @@ class BankTransferForm(FlaskForm):
     wallet_name = StringField('Wallet Name', [
         Length(min=3, max=100, message="Wallet name must be between 3 and 100 characters"),
         DataRequired(message="Wallet name is required"),
-        Regexp(r'^[a-zA-Z0-9_]+$', message="Wallet name can only contain letters, numbers, and underscores")
     ])
     amount = FloatField('Amount', [
         DataRequired(message="Amount is required")

@@ -9,7 +9,6 @@ from bank_lib.decorator import login_required
 from bank_lib.form_validators import ResetPasswordForm
 from bank_lib.get_data import get_settings, get_client_ip, get_user_by_wallet_name
 from bank_lib.log_module import create_log
-from bank_lib.validate import validate_wallet_name
 
 
 def register_request_api_routes(app):
@@ -21,9 +20,6 @@ def register_request_api_routes(app):
         password = data.get('password')
         reason = data.get('reason')
         FORBIDDEN_REASON_CHARS = re.compile(r"[|\'\"`;]")
-
-        if not validate_wallet_name(wallet_name):
-            return jsonify({"error": "Wallet name can only contain letters, numbers, and underscores"}), 400
 
         if not password or len(password) < 8:
             return jsonify({"error": "Password must be at least 8 characters long"}), 400

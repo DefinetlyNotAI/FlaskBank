@@ -34,22 +34,16 @@ def get_settings():
 
 # Get user info by the wallet name
 def get_user_by_wallet_name(wallet_name):
-    """Get user by wallet name"""
-    if 'user_cache' not in g:
-        g.user_cache = {}
-
-    if wallet_name not in g.user_cache:
-        try:
-            users = execute_query_dict(
-                "SELECT * FROM users WHERE wallet_name = %s",
-                (wallet_name,)
-            )
-            g.user_cache[wallet_name] = users[0] if users else None
-        except Exception as e:
-            print(f"Error getting user by wallet name: {e}")
-            g.user_cache[wallet_name] = None
-
-    return g.user_cache[wallet_name]
+    """Always get user by wallet name directly from the database"""
+    try:
+        users = execute_query_dict(
+            "SELECT * FROM users WHERE wallet_name = %s",
+            (wallet_name,)
+        )
+        return users[0] if users else None
+    except Exception as e:
+        print(f"Error getting user by wallet name: {e}")
+        return None
 
 
 # Get server health metrics

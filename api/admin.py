@@ -644,8 +644,6 @@ def register_admin_api_routes(app):
         except Exception as e:
             print(f"Error executing SQL query: {e}")
             return jsonify({"error": f"Query failed: {str(e)}"}), 500
-        finally:
-            sync_admin_wallet()
 
     @app.route('/api/admin/delete-record', methods=['POST'])
     @admin_required

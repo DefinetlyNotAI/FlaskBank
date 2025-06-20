@@ -17,15 +17,6 @@ document.getElementById('submitWalletRequest').addEventListener('click', functio
         return;
     }
 
-    if (!/^[a-zA-Z0-9_]{3,100}$/.test(walletName)) {
-        Swal.fire({
-            title: 'Error!',
-            text: 'Wallet name can only contain letters, numbers, and underscores',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
 
     if (password.length < 8) {
         Swal.fire({

@@ -11,7 +11,6 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from werkzeug.exceptions import BadRequest, HTTPException
 from werkzeug.security import check_password_hash
-from waitress import serve
 
 from api import register_request_api_routes, register_get_api_routes, \
     register_setup_api_routes, register_transfer_api_routes, register_admin_api_routes
@@ -26,7 +25,6 @@ from bank_lib.form_validators import TransferForm, ResetPasswordForm, BankTransf
 from bank_lib.get_data import get_settings, get_total_currency, get_user_by_wallet_name
 from bank_lib.global_vars import DB_POOL
 from bank_lib.log_module import create_log, rotate_logs
-from bank_lib.validate import validate_wallet_name
 
 # Set up logging once in your app setup code (if not already done)
 logging.basicConfig(
@@ -38,7 +36,7 @@ logging.basicConfig(
 )
 
 # Configuration
-secret_key = os.environ.get("SECRET_KEY", None)
+secret_key = os.environ.get("SECRET_KEY", "yay")
 if secret_key is None:
     secret_key = secrets.token_hex(32)
     logging.warning("SECRET_KEY environment variable not set - Using random value")
@@ -186,14 +184,6 @@ def login():
         wallet_name = request.form.get('wallet_name')
         password = request.form.get('password')
 
-        # Input validation
-        if not validate_wallet_name(wallet_name):
-            return render_template('login.html', error="Invalid wallet name format",
-                                   settings=settings,
-                                   is_admin='admin' in session and session['admin'],
-                                   is_logged_in='wallet_name' in session, loginForm=loginForm,
-                                   requestWalletForm=requestWalletForm)
-
         user = get_user_by_wallet_name(wallet_name)
 
         if user and check_password_hash(user['password'], password):
@@ -236,9 +226,6 @@ def logout():
 @app.route('/wallet/<wallet_name>')
 def wallet_page(wallet_name):
     settings = get_settings()
-
-    if not validate_wallet_name(wallet_name):
-        return render_template('error.html', message="Invalid wallet name format")
 
     user = get_user_by_wallet_name(wallet_name)
 
@@ -381,9 +368,6 @@ def admin_wallets_page():
 def admin_wallet_detail_page(wallet_name):
     settings = get_settings()
 
-    if not validate_wallet_name(wallet_name):
-        return render_template('error.html', message="Invalid wallet name format")
-
     user = get_user_by_wallet_name(wallet_name)
 
     if not user:
@@ -514,4 +498,5 @@ if __name__ == '__main__':
         logging.warning("Database pool is not initialized due to the error.")
     finally:
         logging.info("Server Started!")
-        serve(app, host='0.0.0.0', port=5000)
+        app.run(debug=True)
+        # serve(app, host='0.0.0.0', port=5000)
