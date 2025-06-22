@@ -36,7 +36,7 @@ logging.basicConfig(
 )
 
 # Configuration
-secret_key = os.environ.get("SECRET_KEY", "yay")
+secret_key = os.environ.get("SECRET_KEY", None)
 if secret_key is None:
     secret_key = secrets.token_hex(32)
     logging.warning("SECRET_KEY environment variable not set - Using random value")
