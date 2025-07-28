@@ -36,7 +36,7 @@ logging.basicConfig(
 )
 
 # Configuration
-secret_key = os.environ.get("SECRET_KEY", "yay")
+secret_key = os.environ.get("SECRET_KEY", None)
 if secret_key is None:
     secret_key = secrets.token_hex(32)
     logging.warning("SECRET_KEY environment variable not set - Using random value")
@@ -498,5 +498,4 @@ if __name__ == '__main__':
         logging.warning("Database pool is not initialized due to the error.")
     finally:
         logging.info("Server Started!")
-        app.run(debug=True)
-        # serve(app, host='0.0.0.0', port=5000)
+        serve(app, host='0.0.0.0', port=5000)
