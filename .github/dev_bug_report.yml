@@ -1,0 +1,43 @@
+name: Report a development bug
+description: Tell us about a bug or issue you may have identified while developing FlaskBank.
+title: "Provide a general summary of the development issue"
+labels: ["Unreviewed", "Bug"]
+assignees: "DefinetlyNotAI"
+body:
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      description: Take a couple minutes to help our maintainers work faster.
+      options:
+        - label: I have [searched](https://github.com/DefinetlyNotAI/FlaskBank/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aopen) for duplicate or closed issues.
+          required: true
+        - label: I have made sure the issue is not a user error, and have made sure no external modification are responsible for this bug.
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Describe the issue
+      description: Provide a summary of the issue and what you expected to happen, including specific steps to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Console log
+      description: If possible, show what the console gave you in the error - Only required if the bug is due to development
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Include anything you deem important.
+    validations:
+      required: false
+  - type: textarea
+    id: for_where
+    attributes:
+      label: What part of the project does this affect? Aka is it the admin route,
+      description: eg. The core logic, The admin route `/admin`
+    validations:
+      required: true
