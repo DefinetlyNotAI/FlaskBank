@@ -1,0 +1,27 @@
+name: Report a bug
+description: Tell us about a bug or issue you may have identified.
+title: "Provide a general summary of the issue"
+labels: ["Unreviewed", "Bug"]
+assignees: "DefinetlyNotAI"
+body:
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      description: Take a couple minutes to help our maintainers work faster.
+      options:
+        - label: I have [searched](https://github.com/DefinetlyNotAI/FlaskBank/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aopen) for duplicate or closed issues.
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Describe the issue
+      description: Provide a summary of the issue and what you expected to happen, including specific steps to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Include anything you deem important.
+    validations:
+      required: false
