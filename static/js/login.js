@@ -17,6 +17,16 @@ document.getElementById('submitWalletRequest').addEventListener('click', functio
         return;
     }
 
+    const walletNamePattern = /^[A-Za-z0-9_-]+$/;
+    if (!walletNamePattern.test(walletName)) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Wallet name can only include letters, numbers, underscores (_), or hyphens (-)',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
 
     if (password.length < 8) {
         Swal.fire({
