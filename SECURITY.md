@@ -16,17 +16,11 @@ will help us improve the security of our project and ensure the trust of our use
 
 ### How to Report a Vulnerability
 
-1. **Identify the Vulnerability**: Clearly describe the vulnerability, including how it can be exploited and any
-   potential impact.
-2. **Provide Detailed Information**: Include as much detail as possible, such as the version of the project affected,
-   steps to reproduce the vulnerability, and any relevant code snippets or screenshots.
-3. **Contact Us**: Send your report to my [email](mailto:Nirt_12023@outlook.com). Please include "Security Vulnerability
-   Report" in the subject line.
+1. [Go here to submit an advisory](https://github.com/DefinetlyNotAI/FlaskBank/security/advisories/new)
 
 ### What to Expect
 
-- **Acknowledgment**: Upon receiving your report, we will acknowledge receipt within 2-5 business days.
-- **Investigation**: Our security team will investigate the vulnerability and determine its validity.
+- **Acknowledgment**: Upon receiving your report, we will acknowledge receipt once seen.
 - **Update**: If the vulnerability is accepted, we will work on a fix and provide an update on the timeline for a
   security update.
 - **Communication**: We will communicate with you regarding the status of the vulnerability and any necessary actions.
