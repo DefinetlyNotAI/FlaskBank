@@ -149,6 +149,7 @@
                 </div>
             {% endif %}
 
+            {% if session.wallet_name == user.wallet_name or is_admin %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Recent Activity</h5>
@@ -159,6 +160,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 
