@@ -1,5 +1,5 @@
 Flask~=2.3.3
-Werkzeug~=3.0.6
+Werkzeug~=3.1.4
 requests~=2.32.3
 DateTime~=5.5
 flask-talisman~=1.1.0
